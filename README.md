@@ -1,5 +1,5 @@
-# react-webpack4-component-quickstart
-a quick start for a component based on react & webpack4
+# image-marking
+a image marking tool
 
 ## development
 ```

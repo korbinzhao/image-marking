@@ -1,7 +1,7 @@
 {
-  "name": "@ali/component-name",
+  "name": "image-marking",
   "version": "0.0.1",
-  "description": "a react webpack4 component",
+  "description": "a image marking tool",
   "main": "lib/index.js",
   "scripts": {
     "start": "webpack-dev-server --mode development --open",
