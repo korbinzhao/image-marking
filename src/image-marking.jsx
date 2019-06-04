@@ -105,32 +105,26 @@ class DrawBoard extends React.Component {
     }
   }
 
-  // 增加边线
-  addEdge = e => {
-    const position = this.getEventPosition(e);
-
-    const { drawing, shapesData } = this.state;
-
-    if (drawing) {
-      this.addPoint(position);
-
-      this.drawShapes(shapesData);
-    }
-  };
-
   // 结束绘制
   endDrawing = e => {
     const position = this.getEventPosition(e);
 
-    const { drawing } = this.state;
+    this.addPoint(position);
 
-    if (drawing) {
-      this.addPoint(position);
+    this.setState({
+      drawing: false
+    });
+  };
 
-      this.setState({
-        drawing: false
-      });
-    }
+  // 增加边线
+  addEdge = e => {
+    const { shapesData } = this.state;
+
+    const position = this.getEventPosition(e);
+
+    this.addPoint(position);
+
+    this.drawShapes(shapesData);
   };
 
   // 绘制连线
@@ -155,17 +149,21 @@ class DrawBoard extends React.Component {
 
   // 增加顶点
   addPoint = position => {
-    const { shapesData } = this.state;
+    const { shapesData, drawing } = this.state;
 
-    const length = shapesData && shapesData.length;
+    console.log("addPoint", position, drawing);
 
-    if (length > 0) {
-      shapesData[length - 1].points.push([position.x, position.y]);
+    if (drawing) {
+      const length = shapesData && shapesData.length;
+
+      if (length > 0) {
+        shapesData[length - 1].points.push([position.x, position.y]);
+      }
+
+      this.setState({
+        shapesData
+      });
     }
-
-    this.setState({
-      shapesData
-    });
   };
 
   // 获取事件位置
@@ -202,7 +200,10 @@ class DrawBoard extends React.Component {
   };
 
   onMousemove = e => {
-    this.drawLine(e);
+    const { drawing } = this.state;
+    if (drawing) {
+      this.drawLine(e);
+    }
   };
 
   /**
@@ -219,32 +220,47 @@ class DrawBoard extends React.Component {
       });
   };
 
+  // 图形点击事件
   onElementClick = e => {
-    e.stopPropagation();
+    const { isShiftKeyDown, drawing } = this.state;
 
-    const { target } = e;
+    if (!drawing) {
+      e.stopPropagation();
 
-    const { isShiftKeyDown } = this.state;
+      const { target } = e;
 
-    if (!isShiftKeyDown) {
+      if (!isShiftKeyDown) {
+        this.clearElementActive();
+      }
+      Snap(target).attr({
+        class: "com-marking-shape active"
+      });
+    }
+  };
+
+  // SVG 点击事件
+  onSvgClick = e => {
+    const { drawing } = this.state;
+
+    console.log("onSvgClick", drawing);
+
+    if (drawing) {
+      this.addEdge(e);
+    } else {
       this.clearElementActive();
     }
-
-    Snap(target).attr({
-      class: "com-marking-shape active"
-    });
   };
 
-  onSvgClick = e => {
-    this.addEdge(e);
-
-    this.clearElementActive();
-  };
-
+  // SVG 双击事件
   onSvgDblclick = e => {
-    this.endDrawing(e);
+    const { drawing } = this.state;
+
+    if (drawing) {
+      this.endDrawing(e);
+    }
   };
 
+  // 元素删除事件
   onDelete = () => {
     const elements = this.snap.selectAll(".com-marking-shape.active");
 
