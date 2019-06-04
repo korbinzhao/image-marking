@@ -10,59 +10,69 @@ module.exports = {
   },
   module: {
     rules: [{
-      test: /\.js$|\.jsx$/,
-      exclude: /node_modules/,
-      use: {
-        loader: 'babel-loader'
-      }
-    },
-    {
-      test: /\.html$/,
-      use: [{
-        loader: 'html-loader',
-        options: {
-          minimize: true
-        }
-      }]
-    },
-    {
-      test: /\.css$/,
-      loader: 'style-loader!css-loader'
-    },
-    {
-      test: /\.less$/,
-      exclude: '/node_modules',
-      use: [{
-        loader: 'style-loader'
-      },
-      {
-        loader: 'css-loader',
-        options: {
-          importLoaders: 1
+        test: /\.js$|\.jsx$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader'
         }
       },
       {
-        loader: 'postcss-loader',
-        options: {
-          ident: 'postcss',
-          plugins: loader => [
-            require('postcss-import')({
-              root: loader.resourcePath
-            }),
-            require('postcss-cssnext')(),
-            require('autoprefixer')(),
-            require('cssnano')()
-          ]
-        }
+        test: /\.html$/,
+        use: [{
+          loader: 'html-loader',
+          options: {
+            minimize: true
+          }
+        }]
       },
       {
-        loader: 'less-loader',
-        options: {
-          importLoaders: 1
-        }
-      }
-      ]
-    }]
+        test: /\.css$/,
+        loader: 'style-loader!css-loader'
+      },
+      {
+        test: /\.less$/,
+        exclude: '/node_modules',
+        use: [{
+            loader: 'style-loader'
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              ident: 'postcss',
+              plugins: loader => [
+                require('postcss-import')({
+                  root: loader.resourcePath
+                }),
+                require('postcss-cssnext')(),
+                require('autoprefixer')(),
+                require('cssnano')()
+              ]
+            }
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              importLoaders: 1
+            }
+          },
+
+        ]
+      },
+      {
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        loader: "file-loader"
+      },
+      {
+        test: require.resolve('snapsvg'),
+        loader: 'imports-loader?this=>window,fix=>module.exports=0'
+      },
+    ]
   },
   plugins: [
     new HtmlWebPackPlugin({
