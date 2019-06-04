@@ -62,7 +62,8 @@
   },
   "dependencies": {
     "prop-types": "^15.7.2",
-    "snapsvg": "^0.5.1"
+    "snapsvg": "^0.5.1",
+    "uuid": "^3.3.2"
   },
   "publishConfig": {
     "registry": "http://registry.npm.alibaba-inc.com"

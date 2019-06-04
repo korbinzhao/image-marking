@@ -3,6 +3,7 @@ export default {
   "flags": {},
   "shapes": [
     {
+      "shapeId": "id001",
       "label": "ql_1", //id
       "line_color": null,
       "fill_color": null,
@@ -31,6 +32,7 @@ export default {
       "shape_type": "polygon" //区别方向和边界
     },
     {
+      "shapeId": "id002",
       "label": "ql_2",
       "line_color": null,
       "fill_color": null,

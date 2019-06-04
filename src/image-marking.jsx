@@ -1,7 +1,8 @@
 import React from "react";
 import Snap from "snapsvg";
+import uuid from "uuid/v1";
 import {
-  POLYGAN_ICON,
+  POLYGON_ICON,
   MULTI_LINE_ICON,
   GROUP_ICON,
   DELETE_ICON
@@ -13,8 +14,11 @@ import "./image-marking.less";
 class DrawBoard extends React.Component {
   constructor(props) {
     super(props);
-    this.drawMultiline = null;
-    this.drawPolygon = null;
+
+    this.state = {
+      drawing: false,
+      shapesData: props.dataSource
+    };
   }
 
   componentDidMount() {
@@ -25,14 +29,17 @@ class DrawBoard extends React.Component {
 
     const { dataSource } = this.props;
 
-    this.drwaShapes(dataSource);
+    this.drawShapes(dataSource);
   }
 
   /**
    * 根据传入数据绘制所有图形
-   * @param {*} shapesData 
+   * @param {*} shapesData
    */
-  drwaShapes(shapesData) {
+  drawShapes(shapesData) {
+    // 情况画布
+    this.snap.paper.clear();
+
     shapesData.forEach((shape, shapeIndex) => {
       this.drawShap(shape);
     });
@@ -40,7 +47,7 @@ class DrawBoard extends React.Component {
 
   /**
    * 绘制单个图形
-   * @param {*} shape 
+   * @param {*} shape
    */
   drawShap(shape) {
     let points = [];
@@ -49,41 +56,134 @@ class DrawBoard extends React.Component {
       points = points.concat(point);
     });
 
-    console.log('points', points);
-
     switch (shape.shape_type) {
       case "polygon": // 多边形
         this.snap.paper.polygon(points).attr({
           stroke: "#1678E6",
           strokeWidth: 1,
-          fill: "#044B9410"
-        });
+          fill: "#044B9410",
+          shapeId: shape.shapeId || uuid()
+        }).click(this.onElementClick);
         break;
       case "multi_line":
         this.snap.paper.polyline(points).attr({
           stroke: "#1678E6",
           strokeWidth: 1,
           fill: "#044B9410",
-          fillOpacity: 0
-        });
+          fillOpacity: 0,
+          shapeId: shape.shapeId || uuid()
+        }).click(this.onElementClick);
         break;
       default:
         break;
     }
   }
 
-  onMultilineClick = e => {
-    console.log("onMultilineClick", e);
+  // 增加边线
+  addEdge = e => {
+    const position = this.getEventPosition(e);
+
+    console.log(position);
+
+    const { drawing, shapesData } = this.state;
+
+    if (drawing) {
+      this.addPoint(position);
+
+      this.drawShapes(shapesData);
+    }
   };
 
-  onPolygonClick = e => {
-    console.log("onPolygonClick", e);
+  // 结束绘制
+  endDrawing = e => {
+    const position = this.getEventPosition(e);
+
+    const { drawing, shapesData } = this.state;
+
+    if (drawing) {
+      this.addPoint(position);
+
+      // const isLast = true; // 是否是本次绘制的最后一个点
+
+      // this.drawShapes(shapesData, isLast);
+
+      this.setState({
+        drawing: false
+      });
+    }
+  };
+
+  // 绘制连线
+  drawLine = e => {
+    const position = this.getEventPosition(e);
+
+    const { drawing, shapesData } = this.state;
+
+    if (drawing) {
+      const tempData = shapesData;
+
+      const length = tempData && tempData.length;
+
+      if (length > 0) {
+        tempData[length - 1].points.pop();
+        tempData[length - 1].points.push([position.x, position.y]);
+      }
+
+      this.drawShapes(tempData);
+    }
+  };
+
+  // 增加顶点
+  addPoint = position => {
+    const { shapesData } = this.state;
+
+    const length = shapesData && shapesData.length;
+
+    if (length > 0) {
+      shapesData[length - 1].points.push([position.x, position.y]);
+    }
+
+    this.setState(
+      {
+        shapesData
+      },
+      () => {
+        console.log(this.state.shapesData);
+      }
+    );
+  };
+
+  // 获取事件位置
+  getEventPosition = ev => {
+    var x, y;
+    if (ev.layerX || ev.layerX == 0) {
+      x = ev.layerX;
+      y = ev.layerY;
+    } else if (ev.offsetX || ev.offsetX == 0) {
+      // Opera
+      x = ev.offsetX;
+      y = ev.offsetY;
+    }
+    return { x: x, y: y };
+  };
+
+  onOperateBtnClick = shapeType => {
+    const { shapesData } = this.state;
+
+    shapesData.push({
+      shape_type: shapeType,
+      points: []
+    });
+
+    this.setState({
+      drawing: true,
+      shapeType,
+      shapesData
+    });
   };
 
   onMousemove = e => {
-
-    
-
+    this.drawLine(e);
 
     // const {
     //   multiline,
@@ -139,19 +239,20 @@ class DrawBoard extends React.Component {
   };
 
   onElementClick = e => {
-    // console.log('onElementClick', e);
-    // const { target } = e;
-    // const selectMark = Snap(target);
-    // if (selectMark.attr('type') === 'polygon') {
-    //   Snap(target).attr({
-    //     fill: 'rgba(255, 255, 0, 0.2)',
-    //     stroke: 'rgb(255, 255, 0)',
-    //   });
-    // } else {
-    //   Snap(target).attr({
-    //     stroke: 'rgb(255, 255, 0)',
-    //   });
-    // }
+    console.log('onElementClick', e);
+
+    const { target } = e;
+    const selectMark = Snap(target);
+    if (selectMark.attr('type') === 'polygon') {
+      Snap(target).attr({
+        fill: 'rgba(255, 255, 0, 0.2)',
+        stroke: 'rgb(255, 255, 0)',
+      });
+    } else {
+      Snap(target).attr({
+        stroke: 'rgb(255, 255, 0)',
+      });
+    }
     // const { selectMarks, changeStateStore } = this.props;
     // changeStateStore({
     //   selectMarks: [...selectMarks, selectMark],
@@ -160,6 +261,9 @@ class DrawBoard extends React.Component {
 
   onSvgClick = e => {
     console.log("onSvgClick", e);
+
+    this.addEdge(e);
+    // this.chooseShape(e);
 
     // const {
     //   multiline,
@@ -202,6 +306,8 @@ class DrawBoard extends React.Component {
 
   onSvgDblclick = e => {
     console.log("onSvgDblclick", e);
+
+    this.endDrawing(e);
 
     // const {
     //   multiline,
@@ -316,9 +422,15 @@ class DrawBoard extends React.Component {
       <div className={`com-image-remarking-container ${className}`}>
         <div className="operate-bar">
           &emsp;
-          <img src={POLYGAN_ICON} onClick={this.onPolygonClick} />
+          <img
+            src={POLYGON_ICON}
+            onClick={() => this.onOperateBtnClick("polygon")}
+          />
           &ensp;
-          <img src={MULTI_LINE_ICON} onClick={this.onMultilineClick} />
+          <img
+            src={MULTI_LINE_ICON}
+            onClick={() => this.onOperateBtnClick("multi_line")}
+          />
           &ensp;
           <img src={GROUP_ICON} />
           &ensp;
