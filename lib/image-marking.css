@@ -1,0 +1,35 @@
+.com-image-remarking-container {
+  width: 500px;
+  height: 500px;
+}
+.com-image-remarking-container polygon,
+.com-image-remarking-container polyline {
+  cursor: pointer;
+}
+.com-image-remarking-container polygon.active,
+.com-image-remarking-container polyline.active {
+  fill: rgba(255, 255, 0, 0.2);
+  stroke: #ffff00;
+}
+.com-image-remarking-container .operate-bar {
+  width: 150px;
+  height: 36px;
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+}
+.com-image-remarking-container .operate-bar > img {
+  height: 15px;
+  width: 15px;
+  padding: 4px;
+  background-color: #fff;
+  cursor: pointer;
+  color: #333;
+}
+.com-image-remarking-container .operate-bar > img:hover {
+  transform: scale(1.1);
+}
+.com-image-remarking-container .image-remarking-svg {
+  width: 100%;
+  height: 100%;
+}

@@ -1,23 +1,30 @@
 import React from "react";
 import Snap from "snapsvg";
 import uuid from "uuid/v1";
+import PropTypes from "prop-types";
 import {
   POLYGON_ICON,
   MULTI_LINE_ICON,
   GROUP_ICON,
   DELETE_ICON
 } from "./resources/base64";
-import PropTypes from "prop-types";
 
 import "./image-marking.less";
 
 class DrawBoard extends React.Component {
+  static propTypes = {
+    dataSource: PropTypes.array.isRequired, // 数据
+    className: PropTypes.string.isRequired // 自定义类名
+  };
+
   constructor(props) {
     super(props);
 
     this.state = {
-      drawing: false,
-      shapesData: props.dataSource
+      shapesData: props.dataSource,
+      drawing: false, // 是否处于绘制图形状态
+      isShiftKeyDown: false, // 当前 shift 键是否被按下
+      activeShapes: []
     };
   }
 
@@ -30,6 +37,11 @@ class DrawBoard extends React.Component {
     const { dataSource } = this.props;
 
     this.drawShapes(dataSource);
+
+    this.onShiftKeyDown();
+
+    // test
+    window.snap = this.snap;
   }
 
   /**
@@ -58,21 +70,31 @@ class DrawBoard extends React.Component {
 
     switch (shape.shape_type) {
       case "polygon": // 多边形
-        this.snap.paper.polygon(points).attr({
-          stroke: "#1678E6",
-          strokeWidth: 1,
-          fill: "#044B9410",
-          shapeId: shape.shapeId || uuid()
-        }).click(this.onElementClick);
+        this.snap.paper
+          .polygon(points)
+          .attr({
+            stroke: "#1678E6",
+            strokeWidth: 1,
+            fill: "#044B9410",
+            class: "com-marking-shape",
+            shapeId: shape.shapeId || uuid()
+          })
+          .click(this.onElementClick)
+          .drag();
         break;
       case "multi_line":
-        this.snap.paper.polyline(points).attr({
-          stroke: "#1678E6",
-          strokeWidth: 1,
-          fill: "#044B9410",
-          fillOpacity: 0,
-          shapeId: shape.shapeId || uuid()
-        }).click(this.onElementClick);
+        this.snap.paper
+          .polyline(points)
+          .attr({
+            stroke: "#1678E6",
+            strokeWidth: 1,
+            fill: "#044B9410",
+            fillOpacity: 0,
+            class: "com-marking-shape",
+            shapeId: shape.shapeId || uuid()
+          })
+          .click(this.onElementClick)
+          .drag();
         break;
       default:
         break;
@@ -98,14 +120,10 @@ class DrawBoard extends React.Component {
   endDrawing = e => {
     const position = this.getEventPosition(e);
 
-    const { drawing, shapesData } = this.state;
+    const { drawing } = this.state;
 
     if (drawing) {
       this.addPoint(position);
-
-      // const isLast = true; // 是否是本次绘制的最后一个点
-
-      // this.drawShapes(shapesData, isLast);
 
       this.setState({
         drawing: false
@@ -184,235 +202,66 @@ class DrawBoard extends React.Component {
 
   onMousemove = e => {
     this.drawLine(e);
+  };
 
-    // const {
-    //   multiline,
-    //   multilinePoints,
-    //   polygon,
-    //   polygonPoints } = this.props;
-    // const { offsetX,  offsetY } = e;
-    // if (multiline && multilinePoints.length > 0) {
-    //   if (this.drawMultiline) {
-    //     this.drawMultiline.attr({
-    //       points: [...multilinePoints, [offsetX,  offsetY]],
-    //     });
-    //   } else {
-    //     this.drawMultiline = this.snap.polyline([...multilinePoints, [offsetX,  offsetY]]).attr({
-    //       fill: 'none',
-    //       stroke: "#0000ff",
-    //       cursor: "pointer",
-    //       strokeWidth: 2,
-    //     });
-    //   }
-    // }
-    // if (polygon && polygonPoints.length > 0) {
-    //   let type = '';
-    //   if (this.drawPolygon) {
-    //     type = this.drawPolygon.attr('type');
-    //   }
-    //   if (type === 'polyline' && polygonPoints.length > 1) {
-    //     this.drawPolygon.remove();
-    //     this.drawPolygon = this.snap.polygon([...polygonPoints, [offsetX,  offsetY]]).attr({
-    //       // fill: 'none',
-    //       fill: 'rgba(255, 255, 255, 0.2)',
-    //       stroke: "#0000ff",
-    //       cursor: "pointer",
-    //       strokeWidth: 2,
-    //       type: 'polygon',
-    //     });
-    //     return;
-    //   }
-    //   if (this.drawPolygon) {
-    //     this.drawPolygon.attr({
-    //       points: [...polygonPoints, [offsetX,  offsetY]],
-    //     });
-    //   } else {
-    //     this.drawPolygon = this.snap.polyline([...polygonPoints, [offsetX,  offsetY]]).attr({
-    //       fill: 'none',
-    //       stroke: "#0000ff",
-    //       cursor: "pointer",
-    //       strokeWidth: 2,
-    //       type: 'polyline',
-    //     });
-    //   }
-    // }
+  /**
+   * 清除当前所有元素的选中状态
+   */
+  clearElementActive = () => {
+    const elements = this.snap.selectAll(".com-marking-shape");
+
+    elements &&
+      elements.forEach(element => {
+        Snap(element).attr({
+          class: "com-marking-shape"
+        });
+      });
   };
 
   onElementClick = e => {
-    console.log('onElementClick', e);
+    e.stopPropagation();
 
     const { target } = e;
-    const selectMark = Snap(target);
-    if (selectMark.attr('type') === 'polygon') {
-      Snap(target).attr({
-        fill: 'rgba(255, 255, 0, 0.2)',
-        stroke: 'rgb(255, 255, 0)',
-      });
-    } else {
-      Snap(target).attr({
-        stroke: 'rgb(255, 255, 0)',
-      });
+
+    const { isShiftKeyDown } = this.state;
+
+    if (!isShiftKeyDown) {
+      this.clearElementActive();
     }
-    // const { selectMarks, changeStateStore } = this.props;
-    // changeStateStore({
-    //   selectMarks: [...selectMarks, selectMark],
-    // });
+
+    Snap(target).attr({
+      class: "com-marking-shape active"
+    });
   };
 
   onSvgClick = e => {
-    console.log("onSvgClick", e);
-
     this.addEdge(e);
-    // this.chooseShape(e);
 
-    // const {
-    //   multiline,
-    //   multilinePoints,
-    //   polygon,
-    //   polygonPoints,
-    //   selectMarks,
-    //   changeStateStore
-    // } = this.props;
-    // if (multiline) {
-    //   changeStateStore({
-    //     multilinePoints: [...multilinePoints, [e.offsetX, e.offsetY]]
-    //   });
-    // }
-    // if (polygon) {
-    //   changeStateStore({
-    //     polygonPoints: [...polygonPoints, [e.offsetX, e.offsetY]]
-    //   });
-    // }
-    // if (e.target.id !== "configDrawBoard" || multiline || polygon) {
-    //   return;
-    // }
-    // for (const mark of selectMarks) {
-    //   if (mark.attr("type") === "polyline") {
-    //     mark.attr({
-    //       fill: "none",
-    //       stroke: "#0000ff"
-    //     });
-    //   } else {
-    //     mark.attr({
-    //       fill: "rgba(255, 255, 255, 0.2)",
-    //       stroke: "#0000ff"
-    //     });
-    //   }
-    // }
-    // changeStateStore({
-    //   selectMarks: []
-    // });
+    this.clearElementActive();
   };
 
   onSvgDblclick = e => {
-    console.log("onSvgDblclick", e);
-
     this.endDrawing(e);
-
-    // const {
-    //   multiline,
-    //   multilinePoints,
-    //   nowMultilinePoints,
-    //   polygon,
-    //   polygonPoints,
-    //   nowPolygonPoints,
-    //   allMarks,
-    //   changeStateStore
-    // } = this.props;
-    // if (multiline && this.drawMultiline) {
-    //   if (multilinePoints.length < 3) {
-    //     this.drawMultiline.remove();
-    //     return;
-    //   }
-    //   multilinePoints.pop();
-    //   const name = `${new Date().getTime()}`;
-    //   this.drawMultiline.attr({
-    //     name,
-    //     title: name,
-    //     type: "polyline",
-    //     points: multilinePoints
-    //   });
-    //   this.drawMultiline.click(this.onElementClick);
-    //   allMarks.push(this.drawMultiline);
-    //   this.drawMultiline.drag();
-    //   this.drawMultiline = null;
-    //   changeStateStore({
-    //     multilinePoints: [],
-    //     allMarks: [...allMarks],
-    //     nowMultilinePoints: [
-    //       ...nowMultilinePoints,
-    //       {
-    //         id: null,
-    //         name,
-    //         title: name,
-    //         type: "polyline",
-    //         points: multilinePoints
-    //       }
-    //     ],
-    //     multiline: false,
-    //     isFold: false
-    //   });
-    // }
-    // if (polygon && this.drawPolygon) {
-    //   if (polygonPoints.length < 4) {
-    //     this.drawPolygon.remove();
-    //     return;
-    //   }
-    //   polygonPoints.pop();
-    //   const name = `${new Date().getTime()}`;
-    //   this.drawPolygon.attr({
-    //     name,
-    //     title: name,
-    //     type: "polygon",
-    //     points: polygonPoints
-    //   });
-    //   this.drawPolygon.click(this.onElementClick);
-    //   allMarks.push(this.drawPolygon);
-    //   this.drawPolygon.drag();
-    //   this.drawPolygon = null;
-    //   changeStateStore({
-    //     polygonPoints: [],
-    //     allMarks: [...allMarks],
-    //     nowPolygonPoints: [
-    //       ...nowPolygonPoints,
-    //       {
-    //         id: null,
-    //         name,
-    //         title: name,
-    //         type: "polygon",
-    //         points: polygonPoints
-    //       }
-    //     ],
-    //     polygon: false,
-    //     isFold: false
-    //   });
-    // }
   };
 
-  onDelete = e => {
-    console.log("onDelete", e);
+  onDelete = () => {
+    const elements = this.snap.selectAll(".com-marking-shape.active");
 
-    // const { selectMarks, allMarks, changeStateStore } = this.props;
-    // const filterMarks = [];
-    // for (const allMark of allMarks) {
-    //   let isFilter = false;
-    //   for (const selectMark of selectMarks) {
-    //     if (selectMark.attr("id") === allMark.attr("id")) {
-    //       isFilter = true;
-    //       break;
-    //     }
-    //   }
-    //   if (!isFilter) {
-    //     filterMarks.push(allMark);
-    //   }
-    // }
-    // for (const mark of selectMarks) {
-    //   mark.remove();
-    // }
-    // changeStateStore({
-    //   selectMarks: [],
-    //   allMarks: filterMarks
-    // });
+    elements &&
+      elements.forEach(ele => {
+        Snap(ele).remove();
+      });
+  };
+
+  onShiftKeyDown = () => {
+    window.addEventListener("keydown", e => {
+      // 按下 shift 键
+      if (e.keyCode === 16) {
+        this.setState({
+          isShiftKeyDown: true
+        });
+      }
+    });
   };
 
   render() {
@@ -441,17 +290,5 @@ class DrawBoard extends React.Component {
     );
   }
 }
-
-DrawBoard.propTypes = {
-  multiline: PropTypes.bool,
-  multilinePoints: PropTypes.arrayOf(PropTypes.any),
-  polygon: PropTypes.bool,
-  polygonPoints: PropTypes.arrayOf(PropTypes.any),
-  nowMultilinePoints: PropTypes.arrayOf(PropTypes.any),
-  nowPolygonPoints: PropTypes.arrayOf(PropTypes.any),
-  selectMarks: PropTypes.arrayOf(PropTypes.any),
-  allMarks: PropTypes.arrayOf(PropTypes.any),
-  changeStateStore: PropTypes.func
-};
 
 export default DrawBoard;
