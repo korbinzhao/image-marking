@@ -38,15 +38,19 @@ class DrawBoard extends React.Component {
 
     this.drawShapes(dataSource);
 
-    this.onShiftKeyDown();
+    this.onKeyDown();
 
     // test
     window.snap = this.snap;
   }
 
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.onShiftKeyDown);
+  }
+
   /**
    * 根据传入数据绘制所有图形
-   * @param {*} shapesData
+   * @param {Array} shapesData
    */
   drawShapes(shapesData) {
     // 情况画布
@@ -59,7 +63,7 @@ class DrawBoard extends React.Component {
 
   /**
    * 绘制单个图形
-   * @param {*} shape
+   * @param {Object} shape
    */
   drawShap(shape) {
     let points = [];
@@ -104,8 +108,6 @@ class DrawBoard extends React.Component {
   // 增加边线
   addEdge = e => {
     const position = this.getEventPosition(e);
-
-    console.log(position);
 
     const { drawing, shapesData } = this.state;
 
@@ -161,14 +163,9 @@ class DrawBoard extends React.Component {
       shapesData[length - 1].points.push([position.x, position.y]);
     }
 
-    this.setState(
-      {
-        shapesData
-      },
-      () => {
-        console.log(this.state.shapesData);
-      }
-    );
+    this.setState({
+      shapesData
+    });
   };
 
   // 获取事件位置
@@ -185,6 +182,10 @@ class DrawBoard extends React.Component {
     return { x: x, y: y };
   };
 
+  /**
+   * 操作按钮点击
+   * @param {string} shapeType 图形类型，polygon 或 multi_line
+   */
   onOperateBtnClick = shapeType => {
     const { shapesData } = this.state;
 
@@ -253,15 +254,21 @@ class DrawBoard extends React.Component {
       });
   };
 
-  onShiftKeyDown = () => {
-    window.addEventListener("keydown", e => {
-      // 按下 shift 键
-      if (e.keyCode === 16) {
-        this.setState({
-          isShiftKeyDown: true
-        });
-      }
-    });
+  // 键盘事件监听
+  onKeyDown = () => {
+    window.addEventListener("keydown", this.onShiftKeyDown);
+  };
+
+  // shift按键键盘事件监听
+  onShiftKeyDown = e => {
+    console.log(e.keyCode);
+
+    // 按下 shift 键
+    if (e.keyCode === 16) {
+      this.setState({
+        isShiftKeyDown: true
+      });
+    }
   };
 
   render() {
