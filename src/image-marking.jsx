@@ -11,10 +11,16 @@ import {
 
 import "./image-marking.less";
 
-class DrawBoard extends React.Component {
+class ImageMarking extends React.Component {
   static propTypes = {
     dataSource: PropTypes.array.isRequired, // 数据
-    className: PropTypes.string.isRequired // 自定义类名
+    className: PropTypes.string.isRequired, // 自定义类名
+    onContainerClick: PropTypes.func, // 容器单击事件
+    onContainerDblClick: PropTypes.func, // 容器双击时间
+    onShapeClick: PropTypes.func, // 图形单击事件
+    onShapeDblClick: PropTypes.func, // 图形双击事件
+    onShapesDelete: PropTypes.func, // 图形批量删除事件
+    onShiftClick: PropTypes.func // 按住 shift 键情况下的单击事件
   };
 
   constructor(props) {
@@ -30,6 +36,7 @@ class DrawBoard extends React.Component {
 
   componentDidMount() {
     this.snap = Snap("#image-remarking-svg");
+
     this.snap.click(this.onSvgClick);
     this.snap.dblclick(this.onSvgDblclick);
     this.snap.mousemove(this.onMousemove);
@@ -72,37 +79,38 @@ class DrawBoard extends React.Component {
       points = points.concat(point);
     });
 
+    let attr;
+
     switch (shape.shape_type) {
       case "polygon": // 多边形
-        this.snap.paper
-          .polygon(points)
-          .attr({
-            stroke: "#1678E6",
-            strokeWidth: 1,
-            fill: "#044B9410",
-            class: "com-marking-shape",
-            shapeId: shape.shapeId || uuid()
-          })
-          .click(this.onElementClick)
-          .drag();
+        attr = {
+          stroke: "#1678E6",
+          strokeWidth: 1,
+          fill: "#044B9410",
+          class: "com-marking-shape",
+          shapeId: shape.shapeId || uuid()
+        };
         break;
       case "multi_line":
-        this.snap.paper
-          .polyline(points)
-          .attr({
-            stroke: "#1678E6",
-            strokeWidth: 1,
-            fill: "#044B9410",
-            fillOpacity: 0,
-            class: "com-marking-shape",
-            shapeId: shape.shapeId || uuid()
-          })
-          .click(this.onElementClick)
-          .drag();
+        attr = {
+          stroke: "#1678E6",
+          strokeWidth: 1,
+          fill: "#044B9410",
+          fillOpacity: 0,
+          class: "com-marking-shape",
+          shapeId: shape.shapeId || uuid()
+        };
         break;
       default:
         break;
     }
+
+    this.snap.paper
+      .polygon(points)
+      .attr(attr)
+      .click(this.onElementClick)
+      .dblclick(this.onElementDblClick)
+      .drag();
   }
 
   // 结束绘制
@@ -151,8 +159,6 @@ class DrawBoard extends React.Component {
   addPoint = position => {
     const { shapesData, drawing } = this.state;
 
-    console.log("addPoint", position, drawing);
-
     if (drawing) {
       const length = shapesData && shapesData.length;
 
@@ -181,6 +187,16 @@ class DrawBoard extends React.Component {
   };
 
   /**
+   * 设置图形属性
+   * @param {string} shapeId 图形ID
+   * @param {object} attr 属性对象
+   */
+  setShapeAttr(shapeId, attr) {
+    const element = this.snap.select(`.com-marking-shape[shapeId=${shapeId}]`);
+    Snap(element).attr(attr);
+  }
+
+  /**
    * 操作按钮点击
    * @param {string} shapeType 图形类型，polygon 或 multi_line
    */
@@ -199,6 +215,7 @@ class DrawBoard extends React.Component {
     });
   };
 
+  // 鼠标移动事件
   onMousemove = e => {
     const { drawing } = this.state;
     if (drawing) {
@@ -232,23 +249,45 @@ class DrawBoard extends React.Component {
       if (!isShiftKeyDown) {
         this.clearElementActive();
       }
-      Snap(target).attr({
+
+      const element = Snap(target);
+
+      element.attr({
         class: "com-marking-shape active"
       });
+
+      const { onShapeClick } = this.props;
+      onShapeClick && onShapeClick(element);
+
+      if (isShiftKeyDown) {
+        const { onShiftClick } = this.props;
+        const elements = this.snap.selectAll(".com-marking-shape.active");
+        onShiftClick && onShiftClick(elements);
+      }
     }
+  };
+
+  // 图形双击事件
+  onElementDblClick = e => {
+    const { onElementDblClick } = this.props;
+    onElementDblClick && onElementDblClick(e);
   };
 
   // SVG 点击事件
   onSvgClick = e => {
-    const { drawing } = this.state;
+    // 通过延迟执行单击逻辑，来解决单双击事件逻辑相互干扰问题
+    setTimeout(() => {
+      const { drawing } = this.state;
 
-    console.log("onSvgClick", drawing);
+      if (drawing) {
+        this.addEdge(e);
+      } else {
+        this.clearElementActive();
+      }
 
-    if (drawing) {
-      this.addEdge(e);
-    } else {
-      this.clearElementActive();
-    }
+      const { onContainerClick } = this.props;
+      onContainerClick && onContainerClick(e);
+    }, 100);
   };
 
   // SVG 双击事件
@@ -258,6 +297,9 @@ class DrawBoard extends React.Component {
     if (drawing) {
       this.endDrawing(e);
     }
+
+    const { onContainerDblClick } = this.props;
+    onContainerDblClick && onContainerDblClick(e);
   };
 
   // 元素删除事件
@@ -268,6 +310,9 @@ class DrawBoard extends React.Component {
       elements.forEach(ele => {
         Snap(ele).remove();
       });
+
+    const { onShapesDelete } = this.props;
+    onShapesDelete && onShapesDelete(elements);
   };
 
   // 键盘事件监听
@@ -277,8 +322,6 @@ class DrawBoard extends React.Component {
 
   // shift按键键盘事件监听
   onShiftKeyDown = e => {
-    console.log(e.keyCode);
-
     // 按下 shift 键
     if (e.keyCode === 16) {
       this.setState({
@@ -314,4 +357,4 @@ class DrawBoard extends React.Component {
   }
 }
 
-export default DrawBoard;
+export default ImageMarking;
