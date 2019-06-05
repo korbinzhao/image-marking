@@ -15,21 +15,53 @@ export const getEventPosition = ev => {
   };
 };
 
-  /**
-   * 通过 key=value 的方式删除数组中的某一项
-   * @param {object[]} arr 对象数组
-   * @param {*} key
-   * @param {*} value
-   */
-  export const removeItemFromArrayByKey = (arr, key, value) => {
-    const result = [];
+/**
+ * 通过 key=value 的方式删除数组中的某一项
+ * @param {object[]} arr 对象数组
+ * @param {*} key
+ * @param {*} value
+ */
+export const removeItemFromArrayByKey = (arr, key, value) => {
+  const result = [];
 
-    arr &&
-      arr.forEach(item => {
-        if (item[key] !== value) {
-          result.push(item);
-        }
-      });
+  arr &&
+    arr.forEach(item => {
+      if (item[key] !== value) {
+        result.push(item);
+      }
+    });
 
-    return result;
+  return result;
+}
+
+export const getItemFromArrayByKey = (arr, key, value) => {
+  let result;
+
+  arr &&
+    arr.forEach(item => {
+      if (item[key] === value) {
+        result = item;
+      }
+    });
+
+  return result;
+}
+
+/**
+ * 函数节流方法
+ * @param Function fn 延时调用函数
+ * @param Number delay 延迟多长时间
+ * @param Object timer {id: null}
+ */
+export const throttle = (fn, delay, timer) => {
+  if (timer.id) {
+    clearTimeout(timer.id);
   }
+
+  console.log('timer', timer);
+
+  timer.id = setTimeout(() => {
+    fn();
+  }, delay);
+
+}

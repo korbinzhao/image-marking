@@ -8,7 +8,12 @@ import {
   GROUP_ICON,
   DELETE_ICON
 } from "./resources/base64";
-import { getEventPosition, removeItemFromArrayByKey } from "./common/util";
+import {
+  getEventPosition,
+  removeItemFromArrayByKey,
+  getItemFromArrayByKey,
+  throttle
+} from "./common/util";
 
 import "./image-marking.less";
 
@@ -48,6 +53,8 @@ class ImageMarking extends React.Component {
       isShiftKeyDown: false, // 当前 shift 键是否被按下
       activeShapes: []
     };
+
+    this.timer = { id: null };
   }
 
   componentDidMount() {
@@ -55,7 +62,14 @@ class ImageMarking extends React.Component {
 
     const { className } = this.props;
 
-    const selector = `.${className} .image-remarking-svg`; // SVG 容器选择器
+    // 用于容器 className 自定义，防止相同类名干扰问题
+    let selector; // SVG 容器选择器
+    if (className) {
+      selector = `.com-image-remarking-container.${className} .image-remarking-svg`;
+    } else {
+      selector = ".com-image-remarking-container .image-remarking-svg";
+    }
+
     this.snap = Snap(selector);
 
     this.snap.click(this.onSvgClick);
@@ -141,19 +155,94 @@ class ImageMarking extends React.Component {
     }
   }
 
-  onDragMove = (x, y, e) => {
-    const { shapesData } = this.state;
+  /**
+   * drag move event
+   * @param {number} dx shift by x from the start point
+   * @param {number} dy shift by y from the start point
+   * @param {number} x x position of the mouse
+   * @param {number} y y position of the mouse
+   * @param {Event} e 事件
+   */
+  onDragMove = (dx, dy, x, y, e) => {
+    console.log("drag move", dx, dy, x, y, e);
+
+    throttle(
+      () => {
+        const { shapesData } = this.state;
+
+        // 更新当前元素的位置
+        shapesData &&
+          shapesData.forEach(shape => {
+            if (this.dragStartInfo.shapeId === shape.shape_id) {
+              shape.points &&
+                shape.points.forEach((point, pointIndex) => {
+                  point[0] = this.dragStartInfo.startPoints[pointIndex][0] + dx;
+                  point[1] = this.dragStartInfo.startPoints[pointIndex][1] + dy;
+                });
+            }
+          });
+
+        this.setState(
+          {
+            shapesData
+          },
+          () => {
+            this.drawShapes(shapesData);
+            console.log("--- throttle shapesData ---", shapesData);
+          }
+        );
+      },
+      10,
+      this.timer
+    );
   };
 
+  /**
+   * drag start event
+   * @param {*} x x 坐标
+   * @param {*} y y 坐标
+   * @param {*} e 事件
+   */
   onDragStart = (x, y, e) => {
-    this.dragStartPosition = { x, y };
+    const { target } = e;
 
-    console.log("onDragStart", x, y, e);
+    const element = Snap(target);
+    const shapeId = element.node.getAttribute("shape_id");
+
+    // const position = getEventPosition(e);
+
+    // 当前拖拽的图形信息
+    this.dragStartInfo = {
+      shapeId,
+      startX: x,
+      startY: y
+    };
+
+    const { shapesData } = this.state;
+
+    const currentShape = getItemFromArrayByKey(shapesData, "shape_id", shapeId);
+
+    this.dragStartInfo.startPoints = currentShape.points;
+
+    console.log("onDragStart", this.dragStartInfo);
   };
 
+  /**
+   * drag end event
+   * @param {*} x x 坐标
+   * @param {*} y y 坐标
+   * @param {*} e 事件
+   */
   onDragEnd = e => {
     const position = getEventPosition(e);
   };
+
+  // onElementDrag = e => {
+  //   const { onShapeMove, onChange } = this.props;
+  //   const { shapesData } = this.state;
+  //   onShapeMove(e);
+  //   onChange(shapesData);
+  // };
 
   // 结束绘制
   endDrawing = e => {
@@ -367,13 +456,6 @@ class ImageMarking extends React.Component {
         onChange(shapesData);
       }
     );
-  };
-
-  onElementDrag = e => {
-    const { onShapeMove, onChange } = this.props;
-    const { shapesData } = this.state;
-    onShapeMove(e);
-    onChange(shapesData);
   };
 
   // 键盘事件监听
