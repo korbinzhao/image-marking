@@ -9,8 +9,14 @@ export default class Demo extends React.Component {
 
   componentDidMount() {
     setTimeout(() => {
+      // 根据 shapeId 设置某个图形的属性
       this.refs.imageMarking.setShapeAttr("id001", { fill: "red" });
-    }, 1000);
+
+      // 获取当前所有选中图形
+      const elementsActive = this.refs.imageMarking.getElementsActive();
+      console.log('elementsActive', elementsActive);
+
+    }, 3000);
   }
 
   onContainerClick(e) {
@@ -21,20 +27,38 @@ export default class Demo extends React.Component {
     console.log("onContainerDblClick", e);
   }
 
-  onShapeClick(e) {
-    console.log("onShapeClick", e);
+  onShapeClick(element) {
+    // 获取图形ID shapeId
+    const shapeId = element.node.getAttribute("shapeId");
+
+    console.log("onShapeClick", shapeId, element);
   }
 
-  onShapeDblClick(e) {
-    console.log("onShapeDblClick", e);
+  onShapeDblClick(element) {
+    // 获取图形ID shapeId
+    const shapeId = element.node.getAttribute("shapeId");
+    console.log("onShapeDblClick", shapeId, element);
   }
 
   onShapesDelete(elements) {
-    console.log("onShapesDelete", elements);
+    const shapeIds = [];
+    elements &&
+      elements.forEach(element => {
+        const shapeId = element.node.getAttribute("shapeId");
+        shapeIds.push(shapeId);
+      });
+
+    console.log("onShapesDelete", shapeIds, elements);
   }
 
-  onShiftClick(e) {
-    console.log("onShiftClick", e);
+  onShiftClick(elements) {
+    const shapeIds = [];
+    elements &&
+      elements.forEach(element => {
+        const shapeId = element.node.getAttribute("shapeId");
+        shapeIds.push(shapeId);
+      });
+    console.log("onShiftClick", shapeIds, elements);
   }
 
   render() {

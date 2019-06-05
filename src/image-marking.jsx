@@ -35,6 +35,8 @@ class ImageMarking extends React.Component {
   }
 
   componentDidMount() {
+    this.onKeyDown();
+
     this.snap = Snap("#image-remarking-svg");
 
     this.snap.click(this.onSvgClick);
@@ -44,8 +46,6 @@ class ImageMarking extends React.Component {
     const { dataSource } = this.props;
 
     this.drawShapes(dataSource);
-
-    this.onKeyDown();
 
     // test
     window.snap = this.snap;
@@ -197,6 +197,13 @@ class ImageMarking extends React.Component {
   }
 
   /**
+   * 获取当前所有选中图形
+   */
+  getElementsActive = () => {
+    return this.snap.selectAll(".com-marking-shape.active");
+  };
+
+  /**
    * 操作按钮点击
    * @param {string} shapeType 图形类型，polygon 或 multi_line
    */
@@ -227,7 +234,7 @@ class ImageMarking extends React.Component {
    * 清除当前所有元素的选中状态
    */
   clearElementActive = () => {
-    const elements = this.snap.selectAll(".com-marking-shape");
+    const elements = this.getElementsActive();
 
     elements &&
       elements.forEach(element => {
@@ -261,7 +268,7 @@ class ImageMarking extends React.Component {
 
       if (isShiftKeyDown) {
         const { onShiftClick } = this.props;
-        const elements = this.snap.selectAll(".com-marking-shape.active");
+        const elements = this.getElementsActive();
         onShiftClick && onShiftClick(elements);
       }
     }
