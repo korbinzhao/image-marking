@@ -1,15 +1,8 @@
 # image-marking
 a image marking tool
 
-## development
-```
-npm install
+## API
 
-npm start
-```
 
-## publish
 
-```
-tnpm publish
-```
+## DEMO

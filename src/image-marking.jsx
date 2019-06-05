@@ -8,19 +8,35 @@ import {
   GROUP_ICON,
   DELETE_ICON
 } from "./resources/base64";
+import { getEventPosition, removeItemFromArrayByKey } from "./common/util";
 
 import "./image-marking.less";
 
 class ImageMarking extends React.Component {
   static propTypes = {
-    dataSource: PropTypes.array.isRequired, // 数据
-    className: PropTypes.string.isRequired, // 自定义类名
+    dataSource: PropTypes.array, // 数据
+    className: PropTypes.string, // 自定义类名
     onContainerClick: PropTypes.func, // 容器单击事件
     onContainerDblClick: PropTypes.func, // 容器双击时间
     onShapeClick: PropTypes.func, // 图形单击事件
     onShapeDblClick: PropTypes.func, // 图形双击事件
     onShapesDelete: PropTypes.func, // 图形批量删除事件
-    onShiftClick: PropTypes.func // 按住 shift 键情况下的单击事件
+    onShiftClick: PropTypes.func, // 按住 shift 键情况下的单击事件
+    onShapeMove: PropTypes.func, // 图形移动事件
+    onChange: PropTypes.func // 画布变更事件，出现图形的增删、位置移动等
+  };
+
+  static defaultProps = {
+    dataSource: [],
+    className: "",
+    onContainerClick: () => {},
+    onContainerDblClick: () => {},
+    onShapeClick: () => {},
+    onShapeDblClick: () => {},
+    onShapesDelete: () => {},
+    onShiftClick: () => {},
+    onShapeMove: () => {},
+    onChange: () => {}
   };
 
   constructor(props) {
@@ -35,9 +51,12 @@ class ImageMarking extends React.Component {
   }
 
   componentDidMount() {
-    this.onKeyDown();
+    this.onKeyDownListener();
 
-    this.snap = Snap("#image-remarking-svg");
+    const { className } = this.props;
+
+    const selector = `.${className} .image-remarking-svg`; // SVG 容器选择器
+    this.snap = Snap(selector);
 
     this.snap.click(this.onSvgClick);
     this.snap.dblclick(this.onSvgDblclick);
@@ -88,15 +107,15 @@ class ImageMarking extends React.Component {
           strokeWidth: 1,
           fill: "#044B9410",
           class: "com-marking-shape",
-          shapeId: shape.shapeId || uuid()
+          shape_id: shape.shape_id || uuid()
         };
 
         this.snap.paper
-        .polygon(points)
-        .attr(attr)
-        .click(this.onElementClick)
-        .dblclick(this.onElementDblClick)
-        .drag();
+          .polygon(points)
+          .attr(attr)
+          .click(this.onElementClick)
+          .dblclick(this.onElementDblClick)
+          .drag(this.onDragMove, this.onDragStart, this.onDragEnd);
 
         break;
       case "multi_line":
@@ -106,40 +125,56 @@ class ImageMarking extends React.Component {
           fill: "#044B9410",
           fillOpacity: 0,
           class: "com-marking-shape",
-          shapeId: shape.shapeId || uuid()
+          shape_id: shape.shape_id || uuid()
         };
 
         this.snap.paper
-        .polyline(points)
-        .attr(attr)
-        .click(this.onElementClick)
-        .dblclick(this.onElementDblClick)
-        .drag();
+          .polyline(points)
+          .attr(attr)
+          .click(this.onElementClick)
+          .dblclick(this.onElementDblClick)
+          .drag(this.onDragMove, this.onDragStart, this.onDragEnd);
 
         break;
       default:
         break;
     }
-
-   
   }
+
+  onDragMove = (x, y, e) => {
+    const { shapesData } = this.state;
+  };
+
+  onDragStart = (x, y, e) => {
+    this.dragStartPosition = { x, y };
+
+    console.log("onDragStart", x, y, e);
+  };
+
+  onDragEnd = e => {
+    const position = getEventPosition(e);
+  };
 
   // 结束绘制
   endDrawing = e => {
-    const position = this.getEventPosition(e);
+    const position = getEventPosition(e);
 
     this.addPoint(position);
 
     this.setState({
       drawing: false
     });
+
+    const { onChange } = this.props;
+    const { shapesData } = this.state;
+    onChange(shapesData);
   };
 
   // 增加边线
   addEdge = e => {
     const { shapesData } = this.state;
 
-    const position = this.getEventPosition(e);
+    const position = getEventPosition(e);
 
     this.addPoint(position);
 
@@ -148,7 +183,7 @@ class ImageMarking extends React.Component {
 
   // 绘制连线
   drawLine = e => {
-    const position = this.getEventPosition(e);
+    const position = getEventPosition(e);
 
     const { drawing, shapesData } = this.state;
 
@@ -183,27 +218,13 @@ class ImageMarking extends React.Component {
     }
   };
 
-  // 获取事件位置
-  getEventPosition = ev => {
-    var x, y;
-    if (ev.layerX || ev.layerX == 0) {
-      x = ev.layerX;
-      y = ev.layerY;
-    } else if (ev.offsetX || ev.offsetX == 0) {
-      // Opera
-      x = ev.offsetX;
-      y = ev.offsetY;
-    }
-    return { x: x, y: y };
-  };
-
   /**
    * 设置图形属性
    * @param {string} shapeId 图形ID
    * @param {object} attr 属性对象
    */
   setShapeAttr(shapeId, attr) {
-    const element = this.snap.select(`.com-marking-shape[shapeId=${shapeId}]`);
+    const element = this.snap.select(`.com-marking-shape[shape_id=${shapeId}]`);
     Snap(element).attr(attr);
   }
 
@@ -223,6 +244,7 @@ class ImageMarking extends React.Component {
 
     shapesData.push({
       shape_type: shapeType,
+      shape_id: uuid(),
       points: []
     });
 
@@ -275,20 +297,23 @@ class ImageMarking extends React.Component {
       });
 
       const { onShapeClick } = this.props;
-      onShapeClick && onShapeClick(element);
+      onShapeClick(element);
 
       if (isShiftKeyDown) {
         const { onShiftClick } = this.props;
         const elements = this.getElementsActive();
-        onShiftClick && onShiftClick(elements);
+        onShiftClick(elements);
       }
     }
   };
 
   // 图形双击事件
   onElementDblClick = e => {
-    const { onElementDblClick } = this.props;
-    onElementDblClick && onElementDblClick(e);
+    const { drawing } = this.state;
+    if (!drawing) {
+      const { onShapeDblClick } = this.props;
+      onShapeDblClick(e);
+    }
   };
 
   // SVG 点击事件
@@ -304,7 +329,7 @@ class ImageMarking extends React.Component {
       }
 
       const { onContainerClick } = this.props;
-      onContainerClick && onContainerClick(e);
+      onContainerClick(e);
     }, 100);
   };
 
@@ -317,24 +342,42 @@ class ImageMarking extends React.Component {
     }
 
     const { onContainerDblClick } = this.props;
-    onContainerDblClick && onContainerDblClick(e);
+    onContainerDblClick(e);
   };
 
   // 元素删除事件
   onDelete = () => {
     const elements = this.snap.selectAll(".com-marking-shape.active");
+    let { shapesData } = this.state;
 
     elements &&
       elements.forEach(ele => {
         Snap(ele).remove();
+        const shapeId = ele.node.getAttribute("shape_id");
+        shapesData = removeItemFromArrayByKey(shapesData, "shape_id", shapeId);
       });
 
-    const { onShapesDelete } = this.props;
-    onShapesDelete && onShapesDelete(elements);
+    this.setState(
+      {
+        shapesData
+      },
+      () => {
+        const { onShapesDelete, onChange } = this.props;
+        onShapesDelete(elements);
+        onChange(shapesData);
+      }
+    );
+  };
+
+  onElementDrag = e => {
+    const { onShapeMove, onChange } = this.props;
+    const { shapesData } = this.state;
+    onShapeMove(e);
+    onChange(shapesData);
   };
 
   // 键盘事件监听
-  onKeyDown = () => {
+  onKeyDownListener = () => {
     window.addEventListener("keydown", this.onShiftKeyDown);
   };
 
@@ -369,7 +412,7 @@ class ImageMarking extends React.Component {
           &ensp;
           <img src={DELETE_ICON} onClick={this.onDelete} />
         </div>
-        <svg id="image-remarking-svg" className="image-remarking-svg" />
+        <svg className="image-remarking-svg" />
       </div>
     );
   }

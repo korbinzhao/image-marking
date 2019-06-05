@@ -14,8 +14,7 @@ export default class Demo extends React.Component {
 
       // 获取当前所有选中图形
       const elementsActive = this.refs.imageMarking.getElementsActive();
-      console.log('elementsActive', elementsActive);
-
+      console.log("elementsActive", elementsActive);
     }, 3000);
   }
 
@@ -29,14 +28,14 @@ export default class Demo extends React.Component {
 
   onShapeClick(element) {
     // 获取图形ID shapeId
-    const shapeId = element.node.getAttribute("shapeId");
+    const shapeId = element.node.getAttribute("shape_id");
 
     console.log("onShapeClick", shapeId, element);
   }
 
   onShapeDblClick(element) {
     // 获取图形ID shapeId
-    const shapeId = element.node.getAttribute("shapeId");
+    const shapeId = element.node.getAttribute("shape_id");
     console.log("onShapeDblClick", shapeId, element);
   }
 
@@ -44,7 +43,7 @@ export default class Demo extends React.Component {
     const shapeIds = [];
     elements &&
       elements.forEach(element => {
-        const shapeId = element.node.getAttribute("shapeId");
+        const shapeId = element.node.getAttribute("shape_id");
         shapeIds.push(shapeId);
       });
 
@@ -55,10 +54,18 @@ export default class Demo extends React.Component {
     const shapeIds = [];
     elements &&
       elements.forEach(element => {
-        const shapeId = element.node.getAttribute("shapeId");
+        const shapeId = element.node.getAttribute("shape_id");
         shapeIds.push(shapeId);
       });
     console.log("onShiftClick", shapeIds, elements);
+  }
+
+  onShapeMove(e){
+    console.log('onShapeMove', e);
+  }
+
+  onChange(data) {
+    console.log("onChange", data);
   }
 
   render() {
@@ -72,11 +79,13 @@ export default class Demo extends React.Component {
           className="custom-classname"
           ref="imageMarking"
           dataSource={MARKING_DATA.shapes}
+          onChange={this.onChange}
           onContainerClick={this.onContainerClick} // 容器单击事件
           onContainerDblClick={this.onContainerDblClick} // 容器双击时间
           onShapeClick={this.onShapeClick} // 图形单击事件
           onShapeDblClick={this.onShapeDblClick} // 图形双击事件
           onShapesDelete={this.onShapesDelete} // 图形批量删除事件
+          onShapeMove={this.onShapeMove} // 图形移动事件
           onShiftClick={this.onShiftClick} // 按住 shift 键情况下的单击事件
         />
       </div>
