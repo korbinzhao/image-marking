@@ -90,6 +90,14 @@ class ImageMarking extends React.Component {
           class: "com-marking-shape",
           shapeId: shape.shapeId || uuid()
         };
+
+        this.snap.paper
+        .polygon(points)
+        .attr(attr)
+        .click(this.onElementClick)
+        .dblclick(this.onElementDblClick)
+        .drag();
+
         break;
       case "multi_line":
         attr = {
@@ -100,17 +108,20 @@ class ImageMarking extends React.Component {
           class: "com-marking-shape",
           shapeId: shape.shapeId || uuid()
         };
+
+        this.snap.paper
+        .polyline(points)
+        .attr(attr)
+        .click(this.onElementClick)
+        .dblclick(this.onElementDblClick)
+        .drag();
+
         break;
       default:
         break;
     }
 
-    this.snap.paper
-      .polygon(points)
-      .attr(attr)
-      .click(this.onElementClick)
-      .dblclick(this.onElementDblClick)
-      .drag();
+   
   }
 
   // 结束绘制

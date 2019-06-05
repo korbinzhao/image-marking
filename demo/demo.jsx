@@ -10,7 +10,7 @@ export default class Demo extends React.Component {
   componentDidMount() {
     setTimeout(() => {
       // 根据 shapeId 设置某个图形的属性
-      this.refs.imageMarking.setShapeAttr("id001", { fill: "red" });
+      this.refs.imageMarking.setShapeAttr("id001", { fill: "lightblue" });
 
       // 获取当前所有选中图形
       const elementsActive = this.refs.imageMarking.getElementsActive();
