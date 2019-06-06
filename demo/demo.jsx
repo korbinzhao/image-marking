@@ -28,6 +28,9 @@ export default class Demo extends React.Component {
       // 根据选择器高亮多个图形
       const shapesHighlight = this.refs.imageMarking.highlightShapesBySelector('[shape_id=id002],[shape_id=id001]');
 
+      // 获取当前画布数据
+      const shapesData = this.refs.imageMarking.getShapesData();
+
     }, 3000);
   }
 
@@ -79,6 +82,10 @@ export default class Demo extends React.Component {
 
   onChange(data) {
     console.log("onChange", data);
+  }
+
+  onGroup(elements){
+    console.log('onGroup', elements);
   }
 
   render() {

@@ -13,11 +13,13 @@ a image marking tool based on React
 |onShapesDelete|图形批量删除事件 shapes delete event |function|(elements)=>{}|
 |onShapeMove|图形移动事件 shape move event |function|(event)=>{}|
 |onShiftShapeClick|按住 shift 键情况下的单击事件 shift click event |function|(elements)=>{}|
+|onGroup|组合事件 group event |function|(elements)=>{}|
 |setShapeAttr|根据 shapeId 设置某个图形的属性 set shape attribute by shapeId |function|(selector, attributeObject)=>{}|
 |getElementsActive|获取当前所有选中图形 get elements actived |function|()=>{}|
 |select|根据选择器获取单个图形 get element by selector |function|(selector)=>{}|
 |selectAll|根据选择器获取多个图形 get elements by selector |function|(selector)=>{}|
 |highlightShapesBySelector|根据选择器高亮多个图形 highlight elements by selector |function|(selector)=>{}|
+|getShapesData|获取当前画布数据 get data from canvas |function|()=>{}|
 
 ## DEMO
 ### demo.jsx
@@ -51,6 +53,9 @@ export default class Demo extends React.Component {
 
       // 根据选择器高亮多个图形
       const shapesHighlight = this.refs.imageMarking.highlightShapesBySelector('[shape_id=id002],[shape_id=id001]');
+
+      // 获取当前画布数据
+      const shapesData = this.refs.imageMarking.getShapesData();
 
     }, 3000);
   }
@@ -103,6 +108,10 @@ export default class Demo extends React.Component {
 
   onChange(data) {
     console.log("onChange", data);
+  }
+
+  onGroup(elements){
+    console.log('onGroup', elements);
   }
 
   render() {

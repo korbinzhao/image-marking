@@ -28,6 +28,7 @@ class ImageMarking extends React.Component {
     onShapesDelete: PropTypes.func, // 图形批量删除事件
     onShiftShapeClick: PropTypes.func, // 按住 shift 键情况下的单击事件
     onShapeMove: PropTypes.func, // 图形移动事件
+    onGroup: PropTypes.func, // 组合功能触发事件
     onChange: PropTypes.func // 画布变更事件，出现图形的增删、位置移动等
   };
 
@@ -41,6 +42,7 @@ class ImageMarking extends React.Component {
     onShapesDelete: () => {},
     onShiftShapeClick: () => {},
     onShapeMove: () => {},
+    onGroup: () => {},
     onChange: () => {}
   };
 
@@ -85,6 +87,13 @@ class ImageMarking extends React.Component {
   componentWillUnmount() {
     window.removeEventListener("keydown", this.onShiftKeyDown);
   }
+
+  /**
+   * 获取当前画布信息
+   */
+  getShapesData = () => {
+    return this.state.shapesData;
+  };
 
   /**
    * 根据传入数据绘制所有图形
@@ -364,6 +373,16 @@ class ImageMarking extends React.Component {
       shapeType,
       shapesData
     });
+
+    switch (shapeType) {
+      case "group":
+        const { onGroup } = this.props;
+        const shapes = this.getElementsActived();
+        onGroup(shapes);
+        break;
+      default:
+        break;
+    }
   };
 
   // 鼠标移动事件
@@ -512,7 +531,10 @@ class ImageMarking extends React.Component {
             onClick={() => this.onOperateBtnClick("multi_line")}
           />
           &ensp;
-          <img src={GROUP_ICON} />
+          <img
+            src={GROUP_ICON}
+            onClick={() => this.onOperateBtnClick("group")}
+          />
           &ensp;
           <img src={DELETE_ICON} onClick={this.onDelete} />
         </div>
