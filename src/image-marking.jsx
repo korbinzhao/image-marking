@@ -26,7 +26,7 @@ class ImageMarking extends React.Component {
     onShapeClick: PropTypes.func, // 图形单击事件
     onShapeDblClick: PropTypes.func, // 图形双击事件
     onShapesDelete: PropTypes.func, // 图形批量删除事件
-    onShiftClick: PropTypes.func, // 按住 shift 键情况下的单击事件
+    onShiftShapeClick: PropTypes.func, // 按住 shift 键情况下的单击事件
     onShapeMove: PropTypes.func, // 图形移动事件
     onChange: PropTypes.func // 画布变更事件，出现图形的增删、位置移动等
   };
@@ -39,7 +39,7 @@ class ImageMarking extends React.Component {
     onShapeClick: () => {},
     onShapeDblClick: () => {},
     onShapesDelete: () => {},
-    onShiftClick: () => {},
+    onShiftShapeClick: () => {},
     onShapeMove: () => {},
     onChange: () => {}
   };
@@ -54,7 +54,8 @@ class ImageMarking extends React.Component {
       activeShapes: []
     };
 
-    this.timer = { id: null };
+    this.timer = { id: null }; // 用于节流阀函数
+    this.snap = null; // Snap 实例
   }
 
   componentDidMount() {
@@ -79,9 +80,6 @@ class ImageMarking extends React.Component {
     const { dataSource } = this.props;
 
     this.drawShapes(dataSource);
-
-    // test
-    window.snap = this.snap;
   }
 
   componentWillUnmount() {
@@ -156,6 +154,38 @@ class ImageMarking extends React.Component {
   }
 
   /**
+   * 根据选择器获取某个图形
+   * @param {*} query
+   */
+  select = query => {
+    return this.snap.select(query);
+  };
+
+  /**
+   * 根据选择器获取批量图形
+   * @param {*} query
+   */
+  selectAll = query => {
+    return this.snap.selectAll(query);
+  };
+
+  /**
+   * 根据 selector 批量高亮图形
+   * @param {*} selector css 选择器
+   */
+  highlightShapesBySelector(selector) {
+    const shapes = this.snap.selectAll(selector);
+
+    shapes.forEach(shape => {
+      shape.attr({
+        class: "com-marking-shape active"
+      });
+    });
+
+    return shapes;
+  }
+
+  /**
    * drag move event
    * @param {number} dx shift by x from the start point
    * @param {number} dy shift by y from the start point
@@ -164,8 +194,6 @@ class ImageMarking extends React.Component {
    * @param {Event} e 事件
    */
   onDragMove = (dx, dy, x, y, e) => {
-    console.log("drag move", dx, dy, x, y, e);
-
     throttle(
       () => {
         const { shapesData } = this.state;
@@ -188,7 +216,6 @@ class ImageMarking extends React.Component {
           },
           () => {
             this.drawShapes(shapesData);
-            console.log("--- throttle shapesData ---", shapesData);
           }
         );
       },
@@ -209,22 +236,20 @@ class ImageMarking extends React.Component {
     const element = Snap(target);
     const shapeId = element.node.getAttribute("shape_id");
 
-    // const position = getEventPosition(e);
-
-    // 当前拖拽的图形信息
-    this.dragStartInfo = {
-      shapeId,
-      startX: x,
-      startY: y
-    };
+    const position = getEventPosition(e);
 
     const { shapesData } = this.state;
 
     const currentShape = getItemFromArrayByKey(shapesData, "shape_id", shapeId);
 
-    this.dragStartInfo.startPoints = currentShape.points;
-
-    console.log("onDragStart", this.dragStartInfo);
+    // 当前拖拽的图形信息
+    this.dragStartInfo = {
+      shapeId,
+      shape: currentShape,
+      startX: position.x,
+      startY: position.y,
+      startPoints: JSON.parse(JSON.stringify(currentShape.points))
+    };
   };
 
   /**
@@ -234,15 +259,12 @@ class ImageMarking extends React.Component {
    * @param {*} e 事件
    */
   onDragEnd = e => {
-    const position = getEventPosition(e);
+    const { onChange, onShapeMove } = this.props;
+    const { shapesData } = this.state;
+    const { shape } = this.dragStartInfo;
+    onShapeMove(shape);
+    onChange(shapesData);
   };
-
-  // onElementDrag = e => {
-  //   const { onShapeMove, onChange } = this.props;
-  //   const { shapesData } = this.state;
-  //   onShapeMove(e);
-  //   onChange(shapesData);
-  // };
 
   // 结束绘制
   endDrawing = e => {
@@ -309,18 +331,18 @@ class ImageMarking extends React.Component {
 
   /**
    * 设置图形属性
-   * @param {string} shapeId 图形ID
+   * @param {string} selector css选择器
    * @param {object} attr 属性对象
    */
-  setShapeAttr(shapeId, attr) {
-    const element = this.snap.select(`.com-marking-shape[shape_id=${shapeId}]`);
+  setShapeAttr(selector, attr) {
+    const element = this.snap.select(selector);
     Snap(element).attr(attr);
   }
 
   /**
    * 获取当前所有选中图形
    */
-  getElementsActive = () => {
+  getElementsActived = () => {
     return this.snap.selectAll(".com-marking-shape.active");
   };
 
@@ -356,7 +378,7 @@ class ImageMarking extends React.Component {
    * 清除当前所有元素的选中状态
    */
   clearElementActive = () => {
-    const elements = this.getElementsActive();
+    const elements = this.getElementsActived();
 
     elements &&
       elements.forEach(element => {
@@ -389,9 +411,9 @@ class ImageMarking extends React.Component {
       onShapeClick(element);
 
       if (isShiftKeyDown) {
-        const { onShiftClick } = this.props;
-        const elements = this.getElementsActive();
-        onShiftClick(elements);
+        const { onShiftShapeClick } = this.props;
+        const elements = this.getElementsActived();
+        onShiftShapeClick(elements);
       }
     }
   };

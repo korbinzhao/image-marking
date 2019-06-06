@@ -58,8 +58,6 @@ export const throttle = (fn, delay, timer) => {
     clearTimeout(timer.id);
   }
 
-  console.log('timer', timer);
-
   timer.id = setTimeout(() => {
     fn();
   }, delay);

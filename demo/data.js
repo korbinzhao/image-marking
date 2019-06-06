@@ -1,16 +1,15 @@
 export default {
   "version": "3.10.1",
   "flags": {},
-  "shapes": [
-    {
+  "shapes": [{
       "shape_id": "id001",
-      "label": "ql_1", //id
+      "label": "ql_1",
       "line_color": null,
       "fill_color": null,
       "points": [
         [
-          50,
-          50
+          60,
+          60
         ],
         [
           200,
@@ -21,11 +20,11 @@ export default {
           100
         ],
         [
-          50,
-          70
+          60,
+          80
         ]
       ],
-      "shape_type": "polygon" //区别方向和边界
+      "shape_type": "polygon"
     },
     {
       "shape_id": "id002",
@@ -34,24 +33,36 @@ export default {
       "fill_color": null,
       "points": [
         [
-          200,
-          300
+          160,
+          160
         ],
         [
           200,
           200
         ],
         [
-          100,
-          600
+          160,
+          300
         ],
         [
-          417,
-          616
+          217,
+          216
         ],
-        
+
       ],
       "shape_type": "multi_line"
+    },
+    {
+      "shape_id": "id003",
+      "label": "ql_1",
+      "line_color": null,
+      "fill_color": null,
+      "points": [
+        [362, 101],
+        [439, 264],
+        [629, 121]
+      ],
+      "shape_type": "polygon"
     },
   ]
 }
