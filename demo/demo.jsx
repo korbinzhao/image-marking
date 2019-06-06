@@ -107,6 +107,7 @@ export default class Demo extends React.Component {
           onShapesDelete={this.onShapesDelete} // 图形批量删除事件
           onShapeMove={this.onShapeMove} // 图形移动事件
           onShiftShapeClick={this.onShiftShapeClick} // 按住 shift 键情况下的单击事件
+          onGroup={this.onGroup} // 组合事件
         />
       </div>
     );

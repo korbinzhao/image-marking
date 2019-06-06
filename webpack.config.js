@@ -68,10 +68,10 @@ module.exports = {
         test: /\.(jpe?g|png|gif|svg)$/i,
         loader: "file-loader"
       },
-      {
-        test: require.resolve('snapsvg'),
-        loader: 'imports-loader?this=>window,fix=>module.exports=0'
-      },
+      // {
+      //   test: require.resolve('snapsvg'),
+      //   loader: 'imports-loader?this=>window,fix=>module.exports=0'
+      // },
     ]
   },
   plugins: [

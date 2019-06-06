@@ -1,5 +1,6 @@
 import React from "react";
-import Snap from "snapsvg";
+// import Snap from "snapsvg";
+import Snap from "imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js";
 import uuid from "uuid/v1";
 import PropTypes from "prop-types";
 import {
