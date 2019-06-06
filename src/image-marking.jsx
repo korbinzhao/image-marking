@@ -415,12 +415,11 @@ class ImageMarking extends React.Component {
     if (!drawing) {
       e.stopPropagation();
 
-      const { target } = e;
-
       if (!isShiftKeyDown) {
         this.clearElementActive();
       }
 
+      const { target } = e;
       const element = Snap(target);
 
       element.attr({
@@ -442,8 +441,15 @@ class ImageMarking extends React.Component {
   onElementDblClick = e => {
     const { drawing } = this.state;
     if (!drawing) {
+      const { target } = e;
+      const element = Snap(target);
+
+      element.attr({
+        class: "com-marking-shape active"
+      });
+
       const { onShapeDblClick } = this.props;
-      onShapeDblClick(e);
+      onShapeDblClick(element);
     }
   };
 
