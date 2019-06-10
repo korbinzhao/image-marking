@@ -3,9 +3,10 @@ import React from "react";
 import Snap from "imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js";
 import uuid from "uuid/v1";
 import PropTypes from "prop-types";
+import ContextMenu from "com-context-menu";
 import {
   POLYGON_ICON,
-  MULTI_LINE_ICON,
+  POLYLINE_ICON,
   GROUP_ICON,
   DELETE_ICON
 } from "./resources/base64";
@@ -59,6 +60,48 @@ class ImageMarking extends React.Component {
 
     this.timer = { id: null }; // 用于节流阀函数
     this.snap = null; // Snap 实例
+    this.clickTimer = null; // 点击事件 timer，用于区分单双击
+
+    this.shapeContextMenuColumns = [
+      //自定义右键菜单的内容
+      {
+        name: "成组",
+        key: "group",
+        underLine: true, //是否有分割线
+        onClick: e => {
+          console.log(e, "group");
+          const { onGroup } = this.props;
+          const shapes = this.getElementsActived();
+          onGroup(shapes);
+        }
+      },
+      {
+        name: "删除",
+        key: "delete",
+        onClick: e => {
+          this.onDelete();
+        }
+      }
+    ];
+    this.containerContextMenuColumns = [
+      //自定义右键菜单的内容
+      {
+        name: "创建多边形",
+        key: "polygon",
+        underLine: true, //是否有分割线
+        onClick: e => {
+          this.addNewShape("polygon");
+        }
+      },
+      {
+        name: "创建线条",
+        key: "polyline",
+        underLine: true, //是否有分割线
+        onClick: e => {
+          this.addNewShape("polyline");
+        }
+      }
+    ];
   }
 
   componentDidMount() {
@@ -140,7 +183,7 @@ class ImageMarking extends React.Component {
           .drag(this.onDragMove, this.onDragStart, this.onDragEnd);
 
         break;
-      case "multi_line":
+      case "polyline":
         attr = {
           stroke: "#1678E6",
           strokeWidth: 1,
@@ -187,12 +230,18 @@ class ImageMarking extends React.Component {
     const shapes = this.snap.selectAll(selector);
 
     shapes.forEach(shape => {
-      shape.attr({
-        class: "com-marking-shape active"
-      });
+      this.highlightShape(shape.node);
     });
 
     return shapes;
+  }
+
+  /**
+   * 高亮某个图形
+   * @param {*} dom dom
+   */
+  highlightShape(dom) {
+    dom.classList.add("active");
   }
 
   /**
@@ -204,9 +253,17 @@ class ImageMarking extends React.Component {
    * @param {Event} e 事件
    */
   onDragMove = (dx, dy, x, y, e) => {
+    const { drawing } = this.state;
+
+    if (drawing) {
+      return false;
+    }
+
     throttle(
       () => {
         const { shapesData } = this.state;
+
+        console.log("onDragMove", dx, dy);
 
         // 更新当前元素的位置
         shapesData &&
@@ -241,14 +298,20 @@ class ImageMarking extends React.Component {
    * @param {*} e 事件
    */
   onDragStart = (x, y, e) => {
+    const { shapesData, drawing } = this.state;
+
+    if (drawing) {
+      return false;
+    }
+
+    console.log("onDragStart", x, y);
+
     const { target } = e;
 
     const element = Snap(target);
     const shapeId = element.node.getAttribute("shape_id");
 
     const position = getEventPosition(e);
-
-    const { shapesData } = this.state;
 
     const currentShape = getItemFromArrayByKey(shapesData, "shape_id", shapeId);
 
@@ -269,8 +332,15 @@ class ImageMarking extends React.Component {
    * @param {*} e 事件
    */
   onDragEnd = e => {
+    const { shapesData, drawing } = this.state;
+
+    if (drawing) {
+      return false;
+    }
+
+    console.log("onDragEnd");
+
     const { onChange, onShapeMove } = this.props;
-    const { shapesData } = this.state;
     const { shape } = this.dragStartInfo;
     onShapeMove(shape);
     onChange(shapesData);
@@ -278,9 +348,11 @@ class ImageMarking extends React.Component {
 
   // 结束绘制
   endDrawing = e => {
-    const position = getEventPosition(e);
+    console.log("endDrawing");
 
-    this.addPoint(position);
+    // const position = getEventPosition(e);
+
+    // this.addPoint(position);
 
     this.setState({
       drawing: false
@@ -293,13 +365,9 @@ class ImageMarking extends React.Component {
 
   // 增加边线
   addEdge = e => {
-    const { shapesData } = this.state;
-
     const position = getEventPosition(e);
 
     this.addPoint(position);
-
-    this.drawShapes(shapesData);
   };
 
   // 绘制连线
@@ -309,6 +377,7 @@ class ImageMarking extends React.Component {
     const { drawing, shapesData } = this.state;
 
     if (drawing) {
+      // const tempData = JSON.parse(JSON.stringify(shapesData));
       const tempData = shapesData;
 
       const length = tempData && tempData.length;
@@ -316,26 +385,29 @@ class ImageMarking extends React.Component {
       if (length > 0) {
         tempData[length - 1].points.pop();
         tempData[length - 1].points.push([position.x, position.y]);
-      }
 
-      this.drawShapes(tempData);
+        this.drawShapes(tempData);
+      }
     }
   };
 
   // 增加顶点
   addPoint = position => {
+    console.log("addPoint", position);
+
     const { shapesData, drawing } = this.state;
+    const length = shapesData && shapesData.length;
 
-    if (drawing) {
-      const length = shapesData && shapesData.length;
-
-      if (length > 0) {
-        shapesData[length - 1].points.push([position.x, position.y]);
-      }
-
-      this.setState({
-        shapesData
-      });
+    if (drawing && length) {
+      shapesData[length - 1].points.push([position.x, position.y]);
+      this.setState(
+        {
+          shapesData
+        },
+        () => {
+          this.drawShapes(shapesData);
+        }
+      );
     }
   };
 
@@ -358,9 +430,26 @@ class ImageMarking extends React.Component {
 
   /**
    * 操作按钮点击
-   * @param {string} shapeType 图形类型，polygon 或 multi_line
+   * @param {string} shapeType 图形类型，polygon 或 polyline
    */
   onOperateBtnClick = shapeType => {
+    switch (shapeType) {
+      case "group":
+        const { onGroup } = this.props;
+        const shapes = this.getElementsActived();
+        onGroup(shapes);
+        break;
+      default:
+        this.addNewShape(shapeType);
+        break;
+    }
+  };
+
+  /**
+   * 新增新的图形
+   * @param {string} shapeType 图形类型，polygon 或 polyline
+   */
+  addNewShape = shapeType => {
     const { shapesData } = this.state;
 
     shapesData.push({
@@ -374,16 +463,6 @@ class ImageMarking extends React.Component {
       shapeType,
       shapesData
     });
-
-    switch (shapeType) {
-      case "group":
-        const { onGroup } = this.props;
-        const shapes = this.getElementsActived();
-        onGroup(shapes);
-        break;
-      default:
-        break;
-    }
   };
 
   // 鼠标移动事件
@@ -455,8 +534,10 @@ class ImageMarking extends React.Component {
 
   // SVG 点击事件
   onSvgClick = e => {
+    clearTimeout(this.clickTimer);
+
     // 通过延迟执行单击逻辑，来解决单双击事件逻辑相互干扰问题
-    setTimeout(() => {
+    this.clickTimer = setTimeout(() => {
       const { drawing } = this.state;
 
       if (drawing) {
@@ -467,11 +548,13 @@ class ImageMarking extends React.Component {
 
       const { onContainerClick } = this.props;
       onContainerClick(e);
-    }, 100);
+    }, 200);
   };
 
   // SVG 双击事件
   onSvgDblclick = e => {
+    clearTimeout(this.clickTimer);
+
     const { drawing } = this.state;
 
     if (drawing) {
@@ -521,8 +604,27 @@ class ImageMarking extends React.Component {
     }
   };
 
+  /**
+   * 右键事件被触发
+   */
+  onContextMenuTargetRightClick = target => {
+    let columns;
+    if (target.classList.contains("com-marking-shape")) {
+      columns = this.shapeContextMenuColumns;
+    } else if (target.classList.contains("image-remarking-svg")) {
+      columns = this.containerContextMenuColumns;
+    }
+
+    this.highlightShape(target);
+
+    this.setState({
+      contextMenuColumns: columns
+    });
+  };
+
   render() {
     const { className } = this.props;
+    const { contextMenuColumns } = this.state;
 
     return (
       <div className={`com-image-remarking-container ${className}`}>
@@ -534,8 +636,8 @@ class ImageMarking extends React.Component {
           />
           &ensp;
           <img
-            src={MULTI_LINE_ICON}
-            onClick={() => this.onOperateBtnClick("multi_line")}
+            src={POLYLINE_ICON}
+            onClick={() => this.onOperateBtnClick("polyline")}
           />
           &ensp;
           <img
@@ -546,6 +648,11 @@ class ImageMarking extends React.Component {
           <img src={DELETE_ICON} onClick={this.onDelete} />
         </div>
         <svg className="image-remarking-svg" />
+        <ContextMenu
+          actionScopeClassName="com-marking-shape,image-remarking-svg" // 右键时出现自定义菜单的区域的类名 class
+          columns={contextMenuColumns} // 右键菜单的内容
+          onTargetRightClick={this.onContextMenuTargetRightClick}
+        />
       </div>
     );
   }

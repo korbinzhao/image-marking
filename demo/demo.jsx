@@ -31,7 +31,7 @@ export default class Demo extends React.Component {
       // 获取当前画布数据
       const shapesData = this.refs.imageMarking.getShapesData();
 
-    }, 3000);
+    }, 1000);
   }
 
   onContainerClick(e) {
