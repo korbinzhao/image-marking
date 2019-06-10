@@ -195,7 +195,7 @@ export default {
         ],
 
       ],
-      "shape_type": "multi_line"
+      "shape_type": "polyline"
     },
     {
       "shape_id": "id003",
