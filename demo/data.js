@@ -1,4 +1,4 @@
-export default {
+export const DATA1 = {
   "version": "3.10.1",
   "flags": {},
   "shapes": [{
@@ -52,6 +52,25 @@ export default {
       ],
       "shape_type": "polyline"
     },
+    {
+      "shape_id": "id003",
+      "label": "ql_1",
+      "line_color": null,
+      "fill_color": null,
+      "points": [
+        [362, 101],
+        [439, 264],
+        [629, 121]
+      ],
+      "shape_type": "polygon"
+    },
+  ]
+}
+
+export const DATA2 = {
+  "version": "3.10.1",
+  "flags": {},
+  "shapes": [
     {
       "shape_id": "id003",
       "label": "ql_1",

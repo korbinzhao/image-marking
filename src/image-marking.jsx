@@ -104,6 +104,20 @@ class ImageMarking extends React.Component {
     ];
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { dataSource } = nextProps;
+    const { shapesData } = this.state;
+
+    if (
+      JSON.parse(JSON.stringify(dataSource)) !==
+      JSON.parse(JSON.stringify(shapesData))
+    ) {
+      this.setState({ shapesData: dataSource }, () => {
+        this.drawShapes(dataSource);
+      });
+    }
+  }
+
   componentDidMount() {
     this.onKeyDownListener();
 
@@ -123,9 +137,9 @@ class ImageMarking extends React.Component {
     this.snap.dblclick(this.onSvgDblclick);
     this.snap.mousemove(this.onMousemove);
 
-    const { dataSource } = this.props;
+    const { shapesData } = this.state;
 
-    this.drawShapes(dataSource);
+    this.drawShapes(shapesData);
   }
 
   componentWillUnmount() {
