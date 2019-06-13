@@ -69,7 +69,6 @@ class ImageMarking extends React.Component {
         key: "group",
         underLine: true, //是否有分割线
         onClick: e => {
-          console.log(e, "group");
           const { onGroup } = this.props;
           const shapes = this.getElementsActived();
           onGroup(shapes);
@@ -277,8 +276,6 @@ class ImageMarking extends React.Component {
       () => {
         const { shapesData } = this.state;
 
-        console.log("onDragMove", dx, dy);
-
         // 更新当前元素的位置
         shapesData &&
           shapesData.forEach(shape => {
@@ -318,8 +315,6 @@ class ImageMarking extends React.Component {
       return false;
     }
 
-    console.log("onDragStart", x, y);
-
     const { target } = e;
 
     const element = Snap(target);
@@ -352,8 +347,6 @@ class ImageMarking extends React.Component {
       return false;
     }
 
-    console.log("onDragEnd");
-
     const { onChange, onShapeMove } = this.props;
     const { shape } = this.dragStartInfo;
     onShapeMove(shape);
@@ -362,12 +355,6 @@ class ImageMarking extends React.Component {
 
   // 结束绘制
   endDrawing = e => {
-    console.log("endDrawing");
-
-    // const position = getEventPosition(e);
-
-    // this.addPoint(position);
-
     this.setState({
       drawing: false
     });
@@ -407,8 +394,6 @@ class ImageMarking extends React.Component {
 
   // 增加顶点
   addPoint = position => {
-    console.log("addPoint", position);
-
     const { shapesData, drawing } = this.state;
     const length = shapesData && shapesData.length;
 
