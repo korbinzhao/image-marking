@@ -54,6 +54,7 @@ class ImageMarking extends React.Component {
     this.state = {
       shapesData: props.dataSource,
       drawing: false, // 是否处于绘制图形状态
+      draging: false, // 是否处于图形拖动状态
       isShiftKeyDown: false, // 当前 shift 键是否被按下
       activeShapes: []
     };
@@ -258,6 +259,19 @@ class ImageMarking extends React.Component {
   }
 
   /**
+   * 使用一个最小距离来判断图形是否在拖动
+   * @param {*} dx x 轴位移
+   * @param {*} dy y 轴位移
+   */
+  isDraging(dx, dy) {
+    const MIN_DISTANCE = 5;
+    if (Math.abs(dx) > MIN_DISTANCE || Math.abs(dy) > MIN_DISTANCE) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * drag move event
    * @param {number} dx shift by x from the start point
    * @param {number} dy shift by y from the start point
@@ -270,6 +284,12 @@ class ImageMarking extends React.Component {
 
     if (drawing) {
       return false;
+    }
+
+    if (this.isDraging(dx, dy)) {
+      this.setState({
+        draging: true
+      });
     }
 
     throttle(
@@ -347,10 +367,18 @@ class ImageMarking extends React.Component {
       return false;
     }
 
-    const { onChange, onShapeMove } = this.props;
-    const { shape } = this.dragStartInfo;
-    onShapeMove(shape);
-    onChange(shapesData);
+    const { draging } = this.state;
+
+    if (draging) {
+      const { onChange, onShapeMove } = this.props;
+      const { shape } = this.dragStartInfo;
+      onShapeMove(shape);
+      onChange(shapesData);
+    }
+
+    this.setState({
+      draging: false
+    });
   };
 
   // 结束绘制
