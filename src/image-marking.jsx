@@ -287,9 +287,13 @@ class ImageMarking extends React.Component {
     }
 
     if (this.isDraging(dx, dy)) {
-      this.setState({
-        draging: true
-      });
+      const { draging } = this.state;
+
+      if (!draging) {
+        this.setState({
+          draging: true
+        });
+      }
     }
 
     throttle(
