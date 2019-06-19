@@ -104,14 +104,29 @@ class ImageMarking extends React.Component {
     ];
   }
 
-  componentWillReceiveProps(nextProps) {
+  shouldComponentUpdate(nextProps, nextState) {
     const { dataSource } = nextProps;
     const { shapesData } = this.state;
 
     if (
-      JSON.parse(JSON.stringify(dataSource)) !==
-      JSON.parse(JSON.stringify(shapesData))
+      JSON.stringify(dataSource) === JSON.stringify(shapesData) &&
+      JSON.stringify(nextState) === JSON.stringify(this.state)
     ) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  componentDidUpdate() {
+    console.log("did update");
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { dataSource } = nextProps;
+    const { shapesData } = this.state;
+
+    if (JSON.stringify(dataSource) !== JSON.stringify(shapesData)) {
       this.setState({ shapesData: dataSource }, () => {
         this.drawShapes(dataSource);
       });
@@ -126,9 +141,9 @@ class ImageMarking extends React.Component {
     // 用于容器 className 自定义，防止相同类名干扰问题
     let selector; // SVG 容器选择器
     if (className) {
-      selector = `.com-image-remarking-container.${className} .image-remarking-svg`;
+      selector = `.com-image-marking-container.${className} .com-image-marking-svg`;
     } else {
-      selector = ".com-image-remarking-container .image-remarking-svg";
+      selector = ".com-image-marking-container .com-image-marking-svg";
     }
 
     this.snap = Snap(selector);
@@ -579,7 +594,7 @@ class ImageMarking extends React.Component {
 
       const { onContainerClick } = this.props;
       onContainerClick(e);
-    }, 200);
+    }, 100);
   };
 
   // SVG 双击事件
@@ -642,9 +657,11 @@ class ImageMarking extends React.Component {
     let columns;
     if (target.classList.contains("com-marking-shape")) {
       columns = this.shapeContextMenuColumns;
-    } else if (target.classList.contains("image-remarking-svg")) {
+    } else if (target.classList.contains("com-image-marking-container")) {
       columns = this.containerContextMenuColumns;
     }
+
+    console.log(target.classList, columns);
 
     this.highlightShape(target);
 
@@ -658,7 +675,7 @@ class ImageMarking extends React.Component {
     const { contextMenuColumns } = this.state;
 
     return (
-      <div className={`com-image-remarking-container ${className}`}>
+      <div className={`com-image-marking-container ${className}`}>
         <div className="operate-bar">
           &emsp;
           <img
@@ -678,9 +695,9 @@ class ImageMarking extends React.Component {
           &ensp;
           <img src={DELETE_ICON} onClick={this.onDelete} />
         </div>
-        <svg className="image-remarking-svg" />
+        <svg className="com-image-marking-svg" />
         <ContextMenu
-          actionScopeClassName="com-marking-shape,image-remarking-svg" // 右键时出现自定义菜单的区域的类名 class
+          actionScopeClassName="com-marking-shape,com-image-marking-container" // 右键时出现自定义菜单的区域的类名 class
           columns={contextMenuColumns} // 右键菜单的内容
           onTargetRightClick={this.onContextMenuTargetRightClick}
         />

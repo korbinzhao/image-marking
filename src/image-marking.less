@@ -1,7 +1,4 @@
-.com-image-remarking-container {
-  width: 500px;
-  height: 500px;
-
+.com-image-marking-container {
   polygon,
   polyline {
     cursor: pointer;
@@ -20,12 +17,13 @@
     align-items: flex-end;
 
     &>img {
-      height: 15px;
-      width: 15px;
+      height: 23px;
+      width: 23px;
       padding: 4px;
       background-color: #fff;
       cursor: pointer;
       color: #333;
+      box-sizing: border-box;
 
       &:hover {
         transform: scale(1.1);
@@ -33,7 +31,7 @@
     }
   }
 
-  .image-remarking-svg {
+  .com-image-marking-svg {
     width: 100%;
     height: 100%;
   }
