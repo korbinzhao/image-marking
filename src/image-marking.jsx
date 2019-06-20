@@ -436,10 +436,10 @@ class ImageMarking extends React.Component {
     }
 
     if (draging) {
-      const { onChange, onShapeMove } = this.props;
+      const { onShapeMove } = this.props;
       const { shape } = this.dragStartInfo;
       onShapeMove(shape);
-      onChange(shapesData);
+      this.onShapesDataChange(shapesData);
     }
 
     this.setState({
@@ -453,9 +453,8 @@ class ImageMarking extends React.Component {
       drawing: false
     });
 
-    const { onChange } = this.props;
     const { shapesData } = this.state;
-    onChange(shapesData);
+    this.onShapesDataChange(shapesData);
   };
 
   // 增加边线
@@ -589,10 +588,10 @@ class ImageMarking extends React.Component {
         shapesData
       },
       () => {
-        const { onShapesDelete, onChange } = this.props;
+        const { onShapesDelete } = this.props;
         this.setOperateBtnDisableState();
         onShapesDelete(elements);
-        onChange(shapesData);
+        this.onShapesDataChange(shapesData);
       }
     );
   }
@@ -763,6 +762,30 @@ class ImageMarking extends React.Component {
       contextMenuColumns: columns
     });
   };
+
+  onShapesDataChange(shapesData) {
+    const { onChange } = this.props;
+    const data = this.handleShapesData(shapesData);
+    onChange(data);
+  }
+
+  // 过滤掉顶点数小于2个的图形
+  handleShapesData(shapesData) {
+    return shapesData.filter(item => {
+      const points = this.uniqueShapePoints(item.points);
+      if (points.length < 2) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  uniqueShapePoints(shapesData) {
+    const arr1 = shapesData.map(item => item.join(","));
+    const arr2 = Array.from(new Set(arr1));
+    const result = arr2.map(item => item.split(","));
+    return result;
+  }
 
   render() {
     const { className } = this.props;
