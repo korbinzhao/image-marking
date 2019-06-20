@@ -10,7 +10,6 @@ import {
   throttle,
 } from './common/util';
 
-import './resources/iconfont/index.less';
 import './image-marking.less';
 
 class ImageMarking extends React.Component {

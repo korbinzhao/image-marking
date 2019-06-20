@@ -14,17 +14,25 @@
   display: flex;
   align-items: flex-end;
 }
-.com-image-marking-container .operate-bar > img {
+.com-image-marking-container .operate-bar .operation-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 23px;
   width: 23px;
   padding: 4px;
   background-color: #fff;
   cursor: pointer;
-  color: #333;
+  color: #888;
   box-sizing: border-box;
 }
-.com-image-marking-container .operate-bar > img:hover {
+.com-image-marking-container .operate-bar .operation-btn.disabled {
+  color: #c1c1c1;
+  cursor: auto;
+}
+.com-image-marking-container .operate-bar .operation-btn:not(.disabled):hover {
   transform: scale(1.1);
+  color: #333;
 }
 .com-image-marking-container .com-image-marking-svg {
   width: 100%;

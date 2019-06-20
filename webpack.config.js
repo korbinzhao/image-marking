@@ -16,17 +16,17 @@ module.exports = {
         loader: 'babel-loader',
       },
     },
-    {
-      test: /\.js[x]?$/,
-      enforce: 'pre',
-      use: [{
-        loader: 'eslint-loader',
-        options: {
-          fix: true,
-        },
-      }],
-      exclude: /node_modules/,
-    },
+    // {
+    //   test: /\.js[x]?$/,
+    //   enforce: 'pre',
+    //   use: [{
+    //     loader: 'eslint-loader',
+    //     options: {
+    //       fix: true,
+    //     },
+    //   }],
+    //   exclude: /node_modules/,
+    // },
     {
       test: /\.html$/,
       use: [{

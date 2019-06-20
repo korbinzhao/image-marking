@@ -23,8 +23,8 @@ gulp.task('autoprefixer', () => gulp.src('src/*.css')
 
 gulp.task('replace', () => {
   gulp.src('lib/*.js')
-    .pipe(replace(/\/(.+)\.less/, '/$1.css'))
-    .pipe(replace(/\/(.+)\.styl/, '/$1.css'))
+    .pipe(replace(/\/(.+)\.less/g, '/$1.css'))
+    .pipe(replace(/\/(.+)\.styl/g, '/$1.css'))
     .pipe(gulp.dest('lib'));
 });
 
