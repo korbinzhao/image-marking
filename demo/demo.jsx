@@ -106,8 +106,9 @@ export default class Demo extends Component {
     console.log('onShapeMove', e);
   }
 
-  onChange(data) {
+  onChange = (data) => {
     console.log('onChange', data);
+    this.setState({ dataSource: data });
   }
 
   onGroup(elements) {
