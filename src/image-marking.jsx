@@ -3,6 +3,7 @@ import Snap from "imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist
 import uuid from "uuid/v1";
 import PropTypes from "prop-types";
 import ContextMenu from "com-context-menu";
+import { Modal } from "antd";
 import {
   getEventPosition,
   removeItemFromArrayByKey,
@@ -17,6 +18,7 @@ class ImageMarking extends React.Component {
     dataSource: PropTypes.array, // 数据
     className: PropTypes.string, // 自定义类名
     readOnly: PropTypes.bool, // 是否只读
+    deleteConfirm: PropTypes.element, // 自定义删除行为确认框
     onContainerClick: PropTypes.func, // 容器单击事件
     onContainerDblClick: PropTypes.func, // 容器双击时间
     onShapeClick: PropTypes.func, // 图形单击事件
@@ -32,6 +34,7 @@ class ImageMarking extends React.Component {
     dataSource: [],
     className: "",
     readOnly: false,
+    deleteConfirm: null,
     onContainerClick: () => {},
     onContainerDblClick: () => {},
     onShapeClick: () => {},
@@ -52,7 +55,8 @@ class ImageMarking extends React.Component {
       draging: false, // 是否处于图形拖动状态
       isShiftKeyDown: false, // 当前 shift 键是否被按下
       deleteDisable: true, // 是否禁用删除按钮
-      groupDisable: true // 是否禁用组合按钮
+      groupDisable: true, // 是否禁用组合按钮
+      isDeleteConfirmVisible: false
     };
 
     this.timer = { id: null }; // 用于节流阀函数
@@ -157,6 +161,29 @@ class ImageMarking extends React.Component {
     window.removeEventListener("keydown", this.onShiftKeyDown);
     window.removeEventListener("keyup", this.onShiftKeyUp);
   }
+
+  getDeleteConfirm = () => {
+    const { deleteConfirm } = this.props;
+
+    const defaultDeleteConfirm = (
+      <Modal
+        title="删除"
+        visible={this.state.visible}
+        onOk={() => {
+          this.setDeleteConfirmVisible(false);
+          this.deleteShapesActived();
+        }}
+        onCancel={() => {
+          this.setDeleteConfirmVisible(false);
+        }}
+        okText="确认"
+        cancelText="取消"
+      >
+        确定删除吗？
+      </Modal>
+    );
+    return deleteConfirm || defaultDeleteConfirm;
+  };
 
   /**
    * 获取当前画布信息
@@ -533,6 +560,36 @@ class ImageMarking extends React.Component {
     });
   }
 
+  deleteShapesActived() {
+    let { shapesData } = this.state;
+    const elements = this.snap.selectAll(".com-marking-shape.active");
+
+    elements &&
+      elements.forEach(ele => {
+        Snap(ele).remove();
+        const shapeId = ele.node.getAttribute("shape_id");
+        shapesData = removeItemFromArrayByKey(shapesData, "shape_id", shapeId);
+      });
+
+    this.setState(
+      {
+        shapesData
+      },
+      () => {
+        const { onShapesDelete, onChange } = this.props;
+        this.setOperateBtnDisableState();
+        onShapesDelete(elements);
+        onChange(shapesData);
+      }
+    );
+  }
+
+  setDeleteConfirmVisible(visible) {
+    this.setState({
+      isDeleteConfirmVisible: visible
+    });
+  }
+
   // 鼠标移动事件
   onMousemove = e => {
     const { drawing } = this.state;
@@ -635,33 +692,19 @@ class ImageMarking extends React.Component {
 
   // 元素删除事件
   onDelete = () => {
-    let { shapesData } = this.state;
     const { deleteDisable } = this.state;
 
     if (deleteDisable) {
       return false;
     }
 
-    const elements = this.snap.selectAll(".com-marking-shape.active");
+    const { isDeleteConfirmOpen } = this.props;
 
-    elements &&
-      elements.forEach(ele => {
-        Snap(ele).remove();
-        const shapeId = ele.node.getAttribute("shape_id");
-        shapesData = removeItemFromArrayByKey(shapesData, "shape_id", shapeId);
-      });
-
-    this.setState(
-      {
-        shapesData
-      },
-      () => {
-        const { onShapesDelete, onChange } = this.props;
-        this.setOperateBtnDisableState();
-        onShapesDelete(elements);
-        onChange(shapesData);
-      }
-    );
+    if (isDeleteConfirmOpen) {
+      this.setDeleteConfirmVisible(true);
+    } else {
+      this.deleteShapesActived();
+    }
   };
 
   // 键盘事件监听
@@ -710,7 +753,12 @@ class ImageMarking extends React.Component {
 
   render() {
     const { className } = this.props;
-    const { contextMenuColumns, deleteDisable, groupDisable } = this.state;
+    const {
+      contextMenuColumns,
+      deleteDisable,
+      groupDisable,
+      isDeleteConfirmVisible
+    } = this.state;
 
     return (
       <div className={`com-image-marking-container ${className}`}>
@@ -746,6 +794,7 @@ class ImageMarking extends React.Component {
           columns={contextMenuColumns} // 右键菜单的内容
           onTargetRightClick={this.onContextMenuTargetRightClick}
         />
+        {isDeleteConfirmVisible ? this.getDeleteConfirm() : null}
       </div>
     );
   }
