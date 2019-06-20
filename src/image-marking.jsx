@@ -773,6 +773,7 @@ class ImageMarking extends React.Component {
   handleShapesData(shapesData) {
     return shapesData.filter(item => {
       const points = this.uniqueShapePoints(item.points);
+      item.points = points;
       if (points.length < 2) {
         return false;
       }
