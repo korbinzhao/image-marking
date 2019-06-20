@@ -62,49 +62,6 @@ class ImageMarking extends React.Component {
     this.timer = { id: null }; // 用于节流阀函数
     this.snap = null; // Snap 实例
     this.clickTimer = null; // 点击事件 timer，用于区分单双击
-
-    this.shapeContextMenuColumns = [
-      // 自定义右键菜单的内容
-      {
-        name: "成组",
-        key: "group",
-        underLine: true, // 是否有分割线
-        onClick: e => {
-          const { groupDisable } = this.state;
-          if (!groupDisable) {
-            const { onGroup } = this.props;
-            const shapes = this.getElementsActived();
-            onGroup(shapes);
-          }
-        }
-      },
-      {
-        name: "删除",
-        key: "delete",
-        onClick: e => {
-          this.onDelete();
-        }
-      }
-    ];
-    this.containerContextMenuColumns = [
-      // 自定义右键菜单的内容
-      {
-        name: "创建多边形",
-        key: "polygon",
-        underLine: true, // 是否有分割线
-        onClick: e => {
-          this.addNewShape("polygon");
-        }
-      },
-      {
-        name: "创建线条",
-        key: "polyline",
-        underLine: true, // 是否有分割线
-        onClick: e => {
-          this.addNewShape("polyline");
-        }
-      }
-    ];
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -162,13 +119,68 @@ class ImageMarking extends React.Component {
     window.removeEventListener("keyup", this.onShiftKeyUp);
   }
 
+  getShapeContextMenuColumns = () => {
+    const groupContext = {
+      name: "成组",
+      key: "group",
+      underLine: true, // 是否有分割线
+      onClick: e => {
+        const { groupDisable } = this.state;
+        if (!groupDisable) {
+          const { onGroup } = this.props;
+          const shapes = this.getElementsActived();
+          onGroup(shapes);
+        }
+      }
+    };
+
+    const deleteContext = {
+      name: "删除",
+      key: "delete",
+      onClick: e => {
+        this.onDelete();
+      }
+    };
+
+    const { groupDisable } = this.state;
+
+    const columns = [];
+    if (groupDisable) {
+      columns.push(deleteContext);
+    } else {
+      columns.push(groupContext);
+      columns.push(deleteContext);
+    }
+    return columns;
+  };
+
+  getContainerContextMenuColumns = () => [
+    // 自定义右键菜单的内容
+    {
+      name: "创建多边形",
+      key: "polygon",
+      underLine: true, // 是否有分割线
+      onClick: e => {
+        this.addNewShape("polygon");
+      }
+    },
+    {
+      name: "创建线条",
+      key: "polyline",
+      underLine: true, // 是否有分割线
+      onClick: e => {
+        this.addNewShape("polyline");
+      }
+    }
+  ];
+
   getDeleteConfirm = () => {
     const { deleteConfirm } = this.props;
 
     const defaultDeleteConfirm = (
       <Modal
         title="删除"
-        visible={this.state.visible}
+        visible={true}
         onOk={() => {
           this.setDeleteConfirmVisible(false);
           this.deleteShapesActived();
@@ -182,6 +194,7 @@ class ImageMarking extends React.Component {
         确定删除吗？
       </Modal>
     );
+
     return deleteConfirm || defaultDeleteConfirm;
   };
 
@@ -584,11 +597,11 @@ class ImageMarking extends React.Component {
     );
   }
 
-  setDeleteConfirmVisible(visible) {
+  setDeleteConfirmVisible = visible => {
     this.setState({
       isDeleteConfirmVisible: visible
     });
-  }
+  };
 
   // 鼠标移动事件
   onMousemove = e => {
@@ -739,9 +752,9 @@ class ImageMarking extends React.Component {
   onContextMenuTargetRightClick = target => {
     let columns;
     if (target.classList.contains("com-marking-shape")) {
-      columns = this.shapeContextMenuColumns;
+      columns = this.getShapeContextMenuColumns();
     } else if (target.classList.contains("com-image-marking-container")) {
-      columns = this.containerContextMenuColumns;
+      columns = this.getContainerContextMenuColumns();
     }
 
     this.highlightShape(target);
