@@ -1,0 +1,27 @@
+{
+  "parser": "babel-eslint",
+  "extends": "eslint-config-ali/react",
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true,
+      "experimentalDecorators": true,
+      "jsx": true
+    }
+  },
+  "rules": {
+    "max-len": [
+      "warn", {
+        "code": 200,
+        "tabWidth": 2,
+        "ignoreTrailingComments": true,
+        "ignoreUrls": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true
+      }
+    ],
+    "semi": 0,
+    "no-unused-vars": ["error", { "args": "none" }],
+    "no-case-declarations": 0
+  }
+}

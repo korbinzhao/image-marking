@@ -1,6 +1,7 @@
 // 获取事件位置
 export const getEventPosition = ev => {
-  var x, y;
+  let x; let
+    y;
   if (ev.layerX || ev.layerX == 0) {
     x = ev.layerX;
     y = ev.layerY;
@@ -10,8 +11,8 @@ export const getEventPosition = ev => {
     y = ev.offsetY;
   }
   return {
-    x: x,
-    y: y
+    x,
+    y,
   };
 };
 
@@ -61,5 +62,4 @@ export const throttle = (fn, delay, timer) => {
   timer.id = setTimeout(() => {
     fn();
   }, delay);
-
 }

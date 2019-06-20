@@ -1,17 +1,15 @@
-import React, {
-  Component
-} from "react";
-import ReactDOM from "react-dom";
+import React from 'react';
+import ReactDOM from 'react-dom';
 import Demo from './demo';
 
 import './index.less';
 
 const App = () => {
-  return ( 
+  return (
     <Demo />
   );
 };
 
 // export default App;
 
-ReactDOM.render( <App /> , document.getElementById("app"));
+ReactDOM.render(<App />, document.getElementById('app'));

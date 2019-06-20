@@ -1,53 +1,58 @@
-import React, { Component } from "react";
-import ImageMarking from "../src/index";
-import { DATA1, DATA2 } from "./data";
+import React, { Component } from 'react';
+import ImageMarking from '../src/index';
+import { DATA1, DATA2 } from './data';
 
-export default class Demo extends React.Component {
+export default class Demo extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      dataSource: DATA1.shapes
+      dataSource: DATA1.shapes,
     };
   }
 
   componentDidMount() {
     setTimeout(() => {
       // 根据 shapeId 设置某个图形的属性
-      this.refs.imageMarking.setShapeAttr("[shape_id=id003]", {
-        fill: "lightblue"
+      this.imageMarkingRef.setShapeAttr('[shape_id=id003]', {
+        fill: 'lightblue',
       });
 
       // 获取当前所有选中图形
-      const elementsActived = this.refs.imageMarking.getElementsActived();
-      console.log("elementsActived", elementsActived);
+      const elementsActived = this.imageMarkingRef.getElementsActived();
+      console.log('elementsActived', elementsActived);
 
       // 获取 ImageMarking 中的 snap 实例，可通过 snap 调用 Snapsvg API
-      const snap = this.refs.imageMarking.snap;
+      const snap = this.imageMarkingRef.snap;
+      console.log('snap', snap);
 
       // 根据选择器获取单个图形
-      const shape = this.refs.imageMarking.select("[shape_id=id002]");
+      const shape = this.imageMarkingRef.select('[shape_id=id002]');
+      console.log('shape', shape);
 
       // 根据选择器获取多个图形
-      const shapes = this.refs.imageMarking.selectAll(
-        "[shape_id=id002],[shape_id=id001]"
+      const shapes = this.imageMarkingRef.selectAll(
+        '[shape_id=id002],[shape_id=id001]'
       );
+      console.log('shapes', shapes);
 
       // 根据选择器高亮多个图形
-      const shapesHighlight = this.refs.imageMarking.highlightShapesBySelector(
-        "[shape_id=id002],[shape_id=id001]"
+      const shapesHighlight = this.imageMarkingRef.highlightShapesBySelector(
+        '[shape_id=id002],[shape_id=id001]'
       );
+      console.log('shapesHighlight', shapesHighlight);
 
       // 获取当前画布数据
-      const shapesData = this.refs.imageMarking.getShapesData();
+      const shapesData = this.imageMarkingRef.getShapesData();
+      console.log('shapesData', shapesData);
 
       setTimeout(() => {
         this.setState(
           {
-            dataSource: DATA2.shapes
+            dataSource: DATA2.shapes,
           },
           () => {
-            console.log("data change done");
+            console.log('data change done');
           }
         );
       }, 500);
@@ -55,57 +60,57 @@ export default class Demo extends React.Component {
   }
 
   onContainerClick(e) {
-    console.log("onContainerClick", e);
+    console.log('onContainerClick', e);
   }
 
   onContainerDblClick(e) {
-    console.log("onContainerDblClick", e);
+    console.log('onContainerDblClick', e);
   }
 
   onShapeClick(element) {
     // 获取图形ID shapeId
-    const shapeId = element.node.getAttribute("shape_id");
+    const shapeId = element.node.getAttribute('shape_id');
 
-    console.log("onShapeClick", shapeId, element);
+    console.log('onShapeClick', shapeId, element);
   }
 
   onShapeDblClick(element) {
     // 获取图形ID shapeId
-    const shapeId = element.node.getAttribute("shape_id");
-    console.log("onShapeDblClick", shapeId, element);
+    const shapeId = element.node.getAttribute('shape_id');
+    console.log('onShapeDblClick', shapeId, element);
   }
 
   onShapesDelete(elements) {
     const shapeIds = [];
     elements &&
       elements.forEach(element => {
-        const shapeId = element.node.getAttribute("shape_id");
+        const shapeId = element.node.getAttribute('shape_id');
         shapeIds.push(shapeId);
       });
 
-    console.log("onShapesDelete", shapeIds, elements);
+    console.log('onShapesDelete', shapeIds, elements);
   }
 
   onShiftShapeClick(elements) {
     const shapeIds = [];
     elements &&
       elements.forEach(element => {
-        const shapeId = element.node.getAttribute("shape_id");
+        const shapeId = element.node.getAttribute('shape_id');
         shapeIds.push(shapeId);
       });
-    console.log("onShiftClick", shapeIds, elements);
+    console.log('onShiftClick', shapeIds, elements);
   }
 
   onShapeMove(e) {
-    console.log("onShapeMove", e);
+    console.log('onShapeMove', e);
   }
 
   onChange(data) {
-    console.log("onChange", data);
+    console.log('onChange', data);
   }
 
   onGroup(elements) {
-    console.log("onGroup", elements);
+    console.log('onGroup', elements);
   }
 
   render() {
@@ -118,7 +123,7 @@ export default class Demo extends React.Component {
         />
         <ImageMarking
           className="custom-classname"
-          ref="imageMarking"
+          ref={(ref) => { this.imageMarkingRef = ref; }}
           dataSource={dataSource}
           onChange={this.onChange} // 画布发生变化时的回调事件
           onContainerClick={this.onContainerClick} // 容器单击事件
