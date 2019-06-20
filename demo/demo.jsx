@@ -125,6 +125,7 @@ export default class Demo extends Component {
           className="custom-classname"
           ref={(ref) => { this.imageMarkingRef = ref; }}
           dataSource={dataSource}
+          readOnly={false}
           onChange={this.onChange} // 画布发生变化时的回调事件
           onContainerClick={this.onContainerClick} // 容器单击事件
           onContainerDblClick={this.onContainerDblClick} // 容器双击时间
