@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ImageMarking from '../src/index';
 import { DATA1, DATA2 } from './data';
-// import { Modal } from 'antd';
+import { Modal } from 'antd';
 
 export default class Demo extends Component {
   constructor(props) {
@@ -118,23 +118,23 @@ export default class Demo extends Component {
   render() {
     const { dataSource } = this.state;
 
-    // const deleteConfirm = (
-    //   <Modal
-    //     title="自定义删除"
-    //     visible
-    //     onOk={() => {
-    //       this.imageMarkingRef.setDeleteConfirmVisible(false);
-    //       this.imageMarkingRef.deleteShapesActived();
-    //     }}
-    //     onCancel={() => {
-    //       this.imageMarkingRef.setDeleteConfirmVisible(false);
-    //     }}
-    //     okText="确认"
-    //     cancelText="取消"
-    //   >
-    //     亲，确定删除吗？
-    //   </Modal>
-    // );
+    const deleteConfirm = (
+      <Modal
+        title="自定义删除"
+        visible
+        onOk={() => {
+          this.imageMarkingRef.setDeleteConfirmVisible(false);
+          this.imageMarkingRef.deleteShapesActived();
+        }}
+        onCancel={() => {
+          this.imageMarkingRef.setDeleteConfirmVisible(false);
+        }}
+        okText="确认"
+        cancelText="取消"
+      >
+        亲，确定删除吗？
+      </Modal>
+    );
 
     return (
       <div className="demo-container">
@@ -148,9 +148,9 @@ export default class Demo extends Component {
             this.imageMarkingRef = ref;
           }}
           dataSource={dataSource}
-          readOnly={false} // 是否只读
+          readOnly // 是否只读
           isDeleteConfirmOpen // 是否开启删除确认框
-          // deleteConfirm={deleteConfirm} // 删除确认框组件
+          deleteConfirm={deleteConfirm} // 删除确认框组件
           onChange={this.onChange} // 画布发生变化时的回调事件
           onContainerClick={this.onContainerClick} // 容器单击事件
           onContainerDblClick={this.onContainerDblClick} // 容器双击时间
