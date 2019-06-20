@@ -153,6 +153,7 @@ class ImageMarking extends React.Component {
 
   componentWillUnmount() {
     window.removeEventListener('keydown', this.onShiftKeyDown);
+    window.removeEventListener('keyup', this.onShiftKeyUp);
   }
 
   /**
@@ -656,14 +657,25 @@ class ImageMarking extends React.Component {
   // 键盘事件监听
   onKeyDownListener = () => {
     window.addEventListener('keydown', this.onShiftKeyDown);
+    window.addEventListener('keyup', this.onShiftKeyUp);
   };
 
-  // shift按键键盘事件监听
+  // shift按键按下键盘事件监听
   onShiftKeyDown = e => {
     // 按下 shift 键
     if (e.keyCode === 16) {
       this.setState({
         isShiftKeyDown: true,
+      });
+    }
+  };
+
+  // shift按键抬起键盘事件监听
+  onShiftKeyUp = e => {
+    // 按下 shift 键
+    if (e.keyCode === 16) {
+      this.setState({
+        isShiftKeyDown: false,
       });
     }
   };

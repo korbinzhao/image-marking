@@ -7,7 +7,7 @@ export default class Demo extends Component {
     super(props);
 
     this.state = {
-      dataSource: DATA1.shapes,
+      dataSource: DATA2.shapes,
     };
   }
 
@@ -49,7 +49,7 @@ export default class Demo extends Component {
       setTimeout(() => {
         this.setState(
           {
-            dataSource: DATA2.shapes,
+            dataSource: DATA1.shapes,
           },
           () => {
             console.log('data change done');
