@@ -63,4 +63,8 @@
 .com-image-marking-container .com-image-marking-svg {
   width: 100%;
   height: 100%;
+  user-select: none;
+}
+.com-image-marking-container .context-menu-option {
+  user-select: none;
 }
