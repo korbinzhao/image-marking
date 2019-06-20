@@ -1,6 +1,6 @@
 {
   "name": "image-marking",
-  "version": "0.0.1-alpha.12",
+  "version": "0.0.1-alpha.15",
   "description": "a image marking tool",
   "main": "lib/index.js",
   "scripts": {
