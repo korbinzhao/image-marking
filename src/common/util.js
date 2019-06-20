@@ -2,10 +2,10 @@
 export const getEventPosition = ev => {
   let x; let
     y;
-  if (ev.layerX || ev.layerX == 0) {
+  if (ev.layerX || ev.layerX === 0) {
     x = ev.layerX;
     y = ev.layerY;
-  } else if (ev.offsetX || ev.offsetX == 0) {
+  } else if (ev.offsetX || ev.offsetX === 0) {
     // Opera
     x = ev.offsetX;
     y = ev.offsetY;

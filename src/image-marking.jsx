@@ -50,7 +50,8 @@ class ImageMarking extends React.Component {
       drawing: false, // 是否处于绘制图形状态
       draging: false, // 是否处于图形拖动状态
       isShiftKeyDown: false, // 当前 shift 键是否被按下
-      activeShapes: [],
+      deleteDisable: true, // 是否禁用删除按钮
+      groupDisable: true, // 是否禁用组合按钮
     };
 
     this.timer = { id: null }; // 用于节流阀函数
@@ -64,9 +65,12 @@ class ImageMarking extends React.Component {
         key: 'group',
         underLine: true, // 是否有分割线
         onClick: e => {
-          const { onGroup } = this.props;
-          const shapes = this.getElementsActived();
-          onGroup(shapes);
+          const { groupDisable } = this.state;
+          if (!groupDisable) {
+            const { onGroup } = this.props;
+            const shapes = this.getElementsActived();
+            onGroup(shapes);
+          }
         },
       },
       {
@@ -119,6 +123,7 @@ class ImageMarking extends React.Component {
     if (JSON.stringify(dataSource) !== JSON.stringify(shapesData)) {
       this.setState({ shapesData: dataSource }, () => {
         this.drawShapes(dataSource);
+        this.setOperateBtnDisableState();
       });
     }
   }
@@ -261,6 +266,8 @@ class ImageMarking extends React.Component {
    */
   highlightShape(dom) {
     dom.classList.add('active');
+
+    this.setOperateBtnDisableState();
   }
 
   /**
@@ -461,7 +468,7 @@ class ImageMarking extends React.Component {
    * 获取当前所有选中图形
    */
   getElementsActived = () => {
-    return this.snap.selectAll('.com-marking-shape.active');
+    return this.snap ? this.snap.selectAll('.com-marking-shape.active') : [];
   };
 
   /**
@@ -472,8 +479,11 @@ class ImageMarking extends React.Component {
     switch (shapeType) {
       case 'group':
         const { onGroup } = this.props;
-        const shapes = this.getElementsActived();
-        onGroup(shapes);
+        const { groupDisable } = this.state;
+        if (!groupDisable) {
+          const shapes = this.getElementsActived();
+          onGroup(shapes);
+        }
         break;
       default:
         this.addNewShape(shapeType);
@@ -501,6 +511,18 @@ class ImageMarking extends React.Component {
     });
   };
 
+  setOperateBtnDisableState() {
+    const elementsActived = this.getElementsActived();
+
+    const deleteDisable = elementsActived.length < 1;
+    const groupDisable = elementsActived.length < 2;
+
+    this.setState({
+      deleteDisable,
+      groupDisable,
+    });
+  }
+
   // 鼠标移动事件
   onMousemove = e => {
     const { drawing } = this.state;
@@ -521,6 +543,8 @@ class ImageMarking extends React.Component {
           class: 'com-marking-shape',
         });
       });
+
+    this.setOperateBtnDisableState();
   };
 
   // 图形点击事件
@@ -537,9 +561,7 @@ class ImageMarking extends React.Component {
       const { target } = e;
       const element = Snap(target);
 
-      element.attr({
-        class: 'com-marking-shape active',
-      });
+      this.highlightShape(element.node);
 
       const { onShapeClick } = this.props;
       onShapeClick(element);
@@ -603,8 +625,14 @@ class ImageMarking extends React.Component {
 
   // 元素删除事件
   onDelete = () => {
-    const elements = this.snap.selectAll('.com-marking-shape.active');
     let { shapesData } = this.state;
+    const { deleteDisable } = this.state;
+
+    if (deleteDisable) {
+      return false;
+    }
+
+    const elements = this.snap.selectAll('.com-marking-shape.active');
 
     elements &&
       elements.forEach(ele => {
@@ -619,6 +647,7 @@ class ImageMarking extends React.Component {
       },
       () => {
         const { onShapesDelete, onChange } = this.props;
+        this.setOperateBtnDisableState();
         onShapesDelete(elements);
         onChange(shapesData);
       }
@@ -660,7 +689,7 @@ class ImageMarking extends React.Component {
 
   render() {
     const { className } = this.props;
-    const { contextMenuColumns } = this.state;
+    const { contextMenuColumns, deleteDisable, groupDisable } = this.state;
 
     return (
       <div className={`com-image-marking-container ${className}`}>
@@ -677,12 +706,12 @@ class ImageMarking extends React.Component {
           />
           &ensp;
           <i
-            className="iconfont-image-marking icon-xingzhuangjiehe operation-btn"
+            className={`iconfont-image-marking icon-xingzhuangjiehe operation-btn ${groupDisable ? 'disabled' : ''}`}
             onClick={() => this.onOperateBtnClick('group')}
           />
           &ensp;
           <i
-            className="iconfont-image-marking icon-shanchu operation-btn"
+            className={`iconfont-image-marking icon-shanchu operation-btn ${deleteDisable ? 'disabled' : ''}`}
             onClick={() => this.onDelete()}
           />
         </div>
