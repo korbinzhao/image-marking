@@ -148,9 +148,9 @@ export default class Demo extends Component {
             this.imageMarkingRef = ref;
           }}
           dataSource={dataSource}
-          readOnly={false}
-          isDeleteConfirmOpen
-          deleteConfirm={deleteConfirm}
+          readOnly={false} // 是否只读
+          isDeleteConfirmOpen // 是否开启删除确认框
+          deleteConfirm={deleteConfirm} // 删除确认框组件
           onChange={this.onChange} // 画布发生变化时的回调事件
           onContainerClick={this.onContainerClick} // 容器单击事件
           onContainerDblClick={this.onContainerDblClick} // 容器双击时间

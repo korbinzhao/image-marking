@@ -5,6 +5,9 @@ a image marking tool based on React
 |property|description|type|default|
 |---|---|---|---|
 |dataSource|数据源 data source|Array|[]|
+|readOnly|是否只读 is read only or not |boolean|false|
+|isDeleteConfirmOpen|是否开启删除确认框 have confirm when delete|boolean|true|
+|deleteConfirm|删除确认框组件 delete confirm component|element|null|
 |onChange|画布发生变化时的回调事件 canvas changed event|function|(event)=>{}|
 |onContainerClick|容器单击事件 container click event |function|(event)=>{}|
 |onContainerDblClick|容器双击事件 container double click event |function|(event)=>{}|
@@ -24,97 +27,144 @@ a image marking tool based on React
 ## DEMO
 ### demo.jsx
 ```
-import React, { Component } from "react";
-import ImageMarking from "../src/index";
-import MARKING_DATA from "./data";
+import React, { Component } from 'react';
+import ImageMarking from '../src/index';
+import { DATA1, DATA2 } from './data';
+import { Modal } from 'antd';
 
-export default class Demo extends React.Component {
+export default class Demo extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      dataSource: DATA2.shapes,
+    };
   }
 
   componentDidMount() {
     setTimeout(() => {
       // 根据 shapeId 设置某个图形的属性
-      this.refs.imageMarking.setShapeAttr("[shape_id=id003]", { fill: "lightblue"});
+      this.imageMarkingRef.setShapeAttr('[shape_id=id003]', {
+        fill: 'lightblue',
+      });
 
       // 获取当前所有选中图形
-      const elementsActived = this.refs.imageMarking.getElementsActived();
-      console.log("elementsActived", elementsActived);
+      const elementsActived = this.imageMarkingRef.getElementsActived();
+      console.log('elementsActived', elementsActived);
 
       // 获取 ImageMarking 中的 snap 实例，可通过 snap 调用 Snapsvg API
-      const snap = this.refs.imageMarking.snap;
+      const snap = this.imageMarkingRef.snap;
+      console.log('snap', snap);
 
       // 根据选择器获取单个图形
-      const shape = this.refs.imageMarking.select('[shape_id=id002]');
-      
+      const shape = this.imageMarkingRef.select('[shape_id=id002]');
+      console.log('shape', shape);
+
       // 根据选择器获取多个图形
-      const shapes = this.refs.imageMarking.selectAll('[shape_id=id002],[shape_id=id001]');
+      const shapes = this.imageMarkingRef.selectAll(
+        '[shape_id=id002],[shape_id=id001]'
+      );
+      console.log('shapes', shapes);
 
       // 根据选择器高亮多个图形
-      const shapesHighlight = this.refs.imageMarking.highlightShapesBySelector('[shape_id=id002],[shape_id=id001]');
+      const shapesHighlight = this.imageMarkingRef.highlightShapesBySelector(
+        '[shape_id=id002],[shape_id=id001]'
+      );
+      console.log('shapesHighlight', shapesHighlight);
 
       // 获取当前画布数据
-      const shapesData = this.refs.imageMarking.getShapesData();
+      const shapesData = this.imageMarkingRef.getShapesData();
+      console.log('shapesData', shapesData);
 
-    }, 3000);
+      setTimeout(() => {
+        this.setState(
+          {
+            dataSource: DATA1.shapes,
+          },
+          () => {
+            console.log('data change done');
+          }
+        );
+      }, 500);
+    }, 1000);
   }
 
   onContainerClick(e) {
-    console.log("onContainerClick", e);
+    console.log('onContainerClick', e);
   }
 
   onContainerDblClick(e) {
-    console.log("onContainerDblClick", e);
+    console.log('onContainerDblClick', e);
   }
 
   onShapeClick(element) {
     // 获取图形ID shapeId
-    const shapeId = element.node.getAttribute("shape_id");
+    const shapeId = element.node.getAttribute('shape_id');
 
-    console.log("onShapeClick", shapeId, element);
+    console.log('onShapeClick', shapeId, element);
   }
 
   onShapeDblClick(element) {
     // 获取图形ID shapeId
-    const shapeId = element.node.getAttribute("shape_id");
-    console.log("onShapeDblClick", shapeId, element);
+    const shapeId = element.node.getAttribute('shape_id');
+    console.log('onShapeDblClick', shapeId, element);
   }
 
   onShapesDelete(elements) {
     const shapeIds = [];
     elements &&
       elements.forEach(element => {
-        const shapeId = element.node.getAttribute("shape_id");
+        const shapeId = element.node.getAttribute('shape_id');
         shapeIds.push(shapeId);
       });
 
-    console.log("onShapesDelete", shapeIds, elements);
+    console.log('onShapesDelete', shapeIds, elements);
   }
 
   onShiftShapeClick(elements) {
     const shapeIds = [];
     elements &&
       elements.forEach(element => {
-        const shapeId = element.node.getAttribute("shape_id");
+        const shapeId = element.node.getAttribute('shape_id');
         shapeIds.push(shapeId);
       });
-    console.log("onShiftClick", shapeIds, elements);
+    console.log('onShiftClick', shapeIds, elements);
   }
 
-  onShapeMove(e){
+  onShapeMove(e) {
     console.log('onShapeMove', e);
   }
 
-  onChange(data) {
-    console.log("onChange", data);
+  onChange = (data) => {
+    console.log('onChange', data);
+    this.setState({ dataSource: data });
   }
 
-  onGroup(elements){
+  onGroup(elements) {
     console.log('onGroup', elements);
   }
 
   render() {
+    const { dataSource } = this.state;
+
+    const deleteConfirm = (
+      <Modal
+        title="自定义删除"
+        visible
+        onOk={() => {
+          this.imageMarkingRef.setDeleteConfirmVisible(false);
+          this.imageMarkingRef.deleteShapesActived();
+        }}
+        onCancel={() => {
+          this.imageMarkingRef.setDeleteConfirmVisible(false);
+        }}
+        okText="确认"
+        cancelText="取消"
+      >
+        亲，确定删除吗？
+      </Modal>
+    );
+
     return (
       <div className="demo-container">
         <img
@@ -123,8 +173,13 @@ export default class Demo extends React.Component {
         />
         <ImageMarking
           className="custom-classname"
-          ref="imageMarking"
-          dataSource={MARKING_DATA.shapes}
+          ref={ref => {
+            this.imageMarkingRef = ref;
+          }}
+          dataSource={dataSource}
+          readOnly={false} // 是否只读
+          isDeleteConfirmOpen // 是否开启删除确认框
+          deleteConfirm={deleteConfirm} // 删除确认框组件
           onChange={this.onChange} // 画布发生变化时的回调事件
           onContainerClick={this.onContainerClick} // 容器单击事件
           onContainerDblClick={this.onContainerDblClick} // 容器双击时间
@@ -140,75 +195,85 @@ export default class Demo extends React.Component {
   }
 }
 
+
 ```
 ### data.js
 ```
-export default {
-  "version": "3.10.1",
-  "flags": {},
-  "shapes": [{
-      "shape_id": "id001",
-      "label": "ql_1",
-      "line_color": null,
-      "fill_color": null,
-      "points": [
-        [
-          60,
-          60
-        ],
-        [
-          200,
-          100
-        ],
-        [
-          100,
-          100
-        ],
-        [
-          60,
-          80
-        ]
+export const DATA1 = {
+  version: '3.10.1',
+  flags: {},
+  shapes: [{
+    shape_id: 'id001',
+    label: 'ql_1',
+    line_color: null,
+    fill_color: null,
+    points: [
+      [658, 280],
+      [476, 273],
+      [655, 422],
+      [829, 294],
+      [829, 294],
+    ],
+    shape_type: 'polygon',
+  },
+  {
+    shape_id: 'id002',
+    label: 'ql_2',
+    line_color: null,
+    fill_color: null,
+    points: [
+      [
+        160,
+        160,
       ],
-      "shape_type": "polygon"
-    },
-    {
-      "shape_id": "id002",
-      "label": "ql_2",
-      "line_color": null,
-      "fill_color": null,
-      "points": [
-        [
-          160,
-          160
-        ],
-        [
-          200,
-          200
-        ],
-        [
-          160,
-          300
-        ],
-        [
-          217,
-          216
-        ],
+      [
+        200,
+        200,
+      ],
+      [
+        160,
+        300,
+      ],
+      [
+        217,
+        216,
+      ],
 
-      ],
-      "shape_type": "polyline"
-    },
+    ],
+    shape_type: 'polyline',
+  },
+  {
+    shape_id: 'id003',
+    label: 'ql_1',
+    line_color: null,
+    fill_color: null,
+    points: [
+      [362, 101],
+      [439, 264],
+      [629, 121],
+    ],
+    shape_type: 'polygon',
+  },
+  ],
+}
+
+export const DATA2 = {
+  version: '3.10.1',
+  flags: {},
+  shapes: [
     {
-      "shape_id": "id003",
-      "label": "ql_1",
-      "line_color": null,
-      "fill_color": null,
-      "points": [
+      shape_id: 'id003',
+      label: 'ql_1',
+      line_color: null,
+      fill_color: null,
+      points: [
         [362, 101],
         [439, 264],
-        [629, 121]
+        [629, 121],
       ],
-      "shape_type": "polygon"
+      shape_type: 'polygon',
     },
-  ]
+  ],
 }
+
 ```
