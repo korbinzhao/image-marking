@@ -1,17 +1,17 @@
-import React from "react";
-import Snap from "imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js";
-import uuid from "uuid/v1";
-import PropTypes from "prop-types";
-import ContextMenu from "com-context-menu";
-import { Modal } from "antd";
+import React from 'react';
+import Snap from 'imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js';
+import uuid from 'uuid/v1';
+import PropTypes from 'prop-types';
+import ContextMenu from 'com-context-menu';
+import { Modal } from 'antd';
 import {
   getEventPosition,
   removeItemFromArrayByKey,
   getItemFromArrayByKey,
-  throttle
-} from "./common/util";
+  throttle,
+} from './common/util';
 
-import "./image-marking.less";
+import './image-marking.less';
 
 class ImageMarking extends React.Component {
   static propTypes = {
@@ -27,12 +27,12 @@ class ImageMarking extends React.Component {
     onShiftShapeClick: PropTypes.func, // 按住 shift 键情况下的单击事件
     onShapeMove: PropTypes.func, // 图形移动事件
     onGroup: PropTypes.func, // 组合功能触发事件
-    onChange: PropTypes.func // 画布变更事件，出现图形的增删、位置移动等
+    onChange: PropTypes.func, // 画布变更事件，出现图形的增删、位置移动等
   };
 
   static defaultProps = {
     dataSource: [],
-    className: "",
+    className: '',
     readOnly: false,
     deleteConfirm: null,
     onContainerClick: () => {},
@@ -43,7 +43,7 @@ class ImageMarking extends React.Component {
     onShiftShapeClick: () => {},
     onShapeMove: () => {},
     onGroup: () => {},
-    onChange: () => {}
+    onChange: () => {},
   };
 
   constructor(props) {
@@ -56,7 +56,7 @@ class ImageMarking extends React.Component {
       isShiftKeyDown: false, // 当前 shift 键是否被按下
       deleteDisable: true, // 是否禁用删除按钮
       groupDisable: true, // 是否禁用组合按钮
-      isDeleteConfirmVisible: false
+      isDeleteConfirmVisible: false,
     };
 
     this.timer = { id: null }; // 用于节流阀函数
@@ -100,7 +100,7 @@ class ImageMarking extends React.Component {
     if (className) {
       selector = `.com-image-marking-container.${className} .com-image-marking-svg`;
     } else {
-      selector = ".com-image-marking-container .com-image-marking-svg";
+      selector = '.com-image-marking-container .com-image-marking-svg';
     }
 
     this.snap = Snap(selector);
@@ -115,14 +115,14 @@ class ImageMarking extends React.Component {
   }
 
   componentWillUnmount() {
-    window.removeEventListener("keydown", this.onShiftKeyDown);
-    window.removeEventListener("keyup", this.onShiftKeyUp);
+    window.removeEventListener('keydown', this.onShiftKeyDown);
+    window.removeEventListener('keyup', this.onShiftKeyUp);
   }
 
   getShapeContextMenuColumns = () => {
     const groupContext = {
-      name: "成组",
-      key: "group",
+      name: '成组',
+      key: 'group',
       underLine: true, // 是否有分割线
       onClick: e => {
         const { groupDisable } = this.state;
@@ -131,15 +131,15 @@ class ImageMarking extends React.Component {
           const shapes = this.getElementsActived();
           onGroup(shapes);
         }
-      }
+      },
     };
 
     const deleteContext = {
-      name: "删除",
-      key: "delete",
+      name: '删除',
+      key: 'delete',
       onClick: e => {
         this.onDelete();
-      }
+      },
     };
 
     const { groupDisable } = this.state;
@@ -157,21 +157,21 @@ class ImageMarking extends React.Component {
   getContainerContextMenuColumns = () => [
     // 自定义右键菜单的内容
     {
-      name: "创建多边形",
-      key: "polygon",
+      name: '创建多边形',
+      key: 'polygon',
       underLine: true, // 是否有分割线
       onClick: e => {
-        this.addNewShape("polygon");
-      }
+        this.addNewShape('polygon');
+      },
     },
     {
-      name: "创建线条",
-      key: "polyline",
+      name: '创建线条',
+      key: 'polyline',
       underLine: true, // 是否有分割线
       onClick: e => {
-        this.addNewShape("polyline");
-      }
-    }
+        this.addNewShape('polyline');
+      },
+    },
   ];
 
   getDeleteConfirm = () => {
@@ -180,7 +180,7 @@ class ImageMarking extends React.Component {
     const defaultDeleteConfirm = (
       <Modal
         title="删除"
-        visible={true}
+        visible
         onOk={() => {
           this.setDeleteConfirmVisible(false);
           this.deleteShapesActived();
@@ -234,13 +234,13 @@ class ImageMarking extends React.Component {
     let attr;
 
     switch (shape.shape_type) {
-      case "polygon": // 多边形
+      case 'polygon': // 多边形
         attr = {
-          stroke: "#1678E6",
+          stroke: '#1678E6',
           strokeWidth: 1,
-          fill: "#044B9410",
-          class: "com-marking-shape",
-          shape_id: shape.shape_id || uuid()
+          fill: '#044B9410',
+          class: 'com-marking-shape',
+          shape_id: shape.shape_id || uuid(),
         };
 
         if (readOnly) {
@@ -255,14 +255,14 @@ class ImageMarking extends React.Component {
         }
 
         break;
-      case "polyline":
+      case 'polyline':
         attr = {
-          stroke: "#1678E6",
+          stroke: '#1678E6',
           strokeWidth: 1,
-          fill: "#044B9410",
+          fill: '#044B9410',
           fillOpacity: 0,
-          class: "com-marking-shape",
-          shape_id: shape.shape_id || uuid()
+          class: 'com-marking-shape',
+          shape_id: shape.shape_id || uuid(),
         };
 
         if (readOnly) {
@@ -317,7 +317,7 @@ class ImageMarking extends React.Component {
    * @param {*} dom dom
    */
   highlightShape(dom) {
-    dom.classList.add("active");
+    dom.classList.add('active');
 
     this.setOperateBtnDisableState();
   }
@@ -355,7 +355,7 @@ class ImageMarking extends React.Component {
 
       if (!draging) {
         this.setState({
-          draging: true
+          draging: true,
         });
       }
     }
@@ -378,7 +378,7 @@ class ImageMarking extends React.Component {
 
         this.setState(
           {
-            shapesData
+            shapesData,
           },
           () => {
             this.drawShapes(shapesData);
@@ -406,11 +406,11 @@ class ImageMarking extends React.Component {
     const { target } = e;
 
     const element = Snap(target);
-    const shapeId = element.node.getAttribute("shape_id");
+    const shapeId = element.node.getAttribute('shape_id');
 
     const position = getEventPosition(e);
 
-    const currentShape = getItemFromArrayByKey(shapesData, "shape_id", shapeId);
+    const currentShape = getItemFromArrayByKey(shapesData, 'shape_id', shapeId);
 
     // 当前拖拽的图形信息
     this.dragStartInfo = {
@@ -418,7 +418,7 @@ class ImageMarking extends React.Component {
       shape: currentShape,
       startX: position.x,
       startY: position.y,
-      startPoints: JSON.parse(JSON.stringify(currentShape.points))
+      startPoints: JSON.parse(JSON.stringify(currentShape.points)),
     };
   };
 
@@ -443,14 +443,14 @@ class ImageMarking extends React.Component {
     }
 
     this.setState({
-      draging: false
+      draging: false,
     });
   };
 
   // 结束绘制
   endDrawing = e => {
     this.setState({
-      drawing: false
+      drawing: false,
     });
 
     const { shapesData } = this.state;
@@ -494,7 +494,7 @@ class ImageMarking extends React.Component {
       shapesData[length - 1].points.push([position.x, position.y]);
       this.setState(
         {
-          shapesData
+          shapesData,
         },
         () => {
           this.drawShapes(shapesData);
@@ -517,7 +517,7 @@ class ImageMarking extends React.Component {
    * 获取当前所有选中图形
    */
   getElementsActived = () => {
-    return this.snap ? this.snap.selectAll(".com-marking-shape.active") : [];
+    return this.snap ? this.snap.selectAll('.com-marking-shape.active') : [];
   };
 
   /**
@@ -526,7 +526,7 @@ class ImageMarking extends React.Component {
    */
   onOperateBtnClick = shapeType => {
     switch (shapeType) {
-      case "group":
+      case 'group':
         const { onGroup } = this.props;
         const { groupDisable } = this.state;
         if (!groupDisable) {
@@ -550,13 +550,13 @@ class ImageMarking extends React.Component {
     shapesData.push({
       shape_type: shapeType,
       shape_id: uuid(),
-      points: []
+      points: [],
     });
 
     this.setState({
       drawing: true,
       shapeType,
-      shapesData
+      shapesData,
     });
   };
 
@@ -568,24 +568,24 @@ class ImageMarking extends React.Component {
 
     this.setState({
       deleteDisable,
-      groupDisable
+      groupDisable,
     });
   }
 
   deleteShapesActived() {
     let { shapesData } = this.state;
-    const elements = this.snap.selectAll(".com-marking-shape.active");
+    const elements = this.snap.selectAll('.com-marking-shape.active');
 
     elements &&
       elements.forEach(ele => {
         Snap(ele).remove();
-        const shapeId = ele.node.getAttribute("shape_id");
-        shapesData = removeItemFromArrayByKey(shapesData, "shape_id", shapeId);
+        const shapeId = ele.node.getAttribute('shape_id');
+        shapesData = removeItemFromArrayByKey(shapesData, 'shape_id', shapeId);
       });
 
     this.setState(
       {
-        shapesData
+        shapesData,
       },
       () => {
         const { onShapesDelete } = this.props;
@@ -598,7 +598,7 @@ class ImageMarking extends React.Component {
 
   setDeleteConfirmVisible = visible => {
     this.setState({
-      isDeleteConfirmVisible: visible
+      isDeleteConfirmVisible: visible,
     });
   };
 
@@ -619,7 +619,7 @@ class ImageMarking extends React.Component {
     elements &&
       elements.forEach(element => {
         Snap(element).attr({
-          class: "com-marking-shape"
+          class: 'com-marking-shape',
         });
       });
 
@@ -661,7 +661,7 @@ class ImageMarking extends React.Component {
       const element = Snap(target);
 
       element.attr({
-        class: "com-marking-shape active"
+        class: 'com-marking-shape active',
       });
 
       const { onShapeDblClick } = this.props;
@@ -721,8 +721,8 @@ class ImageMarking extends React.Component {
 
   // 键盘事件监听
   onKeyDownListener = () => {
-    window.addEventListener("keydown", this.onShiftKeyDown);
-    window.addEventListener("keyup", this.onShiftKeyUp);
+    window.addEventListener('keydown', this.onShiftKeyDown);
+    window.addEventListener('keyup', this.onShiftKeyUp);
   };
 
   // shift按键按下键盘事件监听
@@ -730,7 +730,7 @@ class ImageMarking extends React.Component {
     // 按下 shift 键
     if (e.keyCode === 16) {
       this.setState({
-        isShiftKeyDown: true
+        isShiftKeyDown: true,
       });
     }
   };
@@ -740,7 +740,7 @@ class ImageMarking extends React.Component {
     // 按下 shift 键
     if (e.keyCode === 16) {
       this.setState({
-        isShiftKeyDown: false
+        isShiftKeyDown: false,
       });
     }
   };
@@ -750,16 +750,16 @@ class ImageMarking extends React.Component {
    */
   onContextMenuTargetRightClick = target => {
     let columns;
-    if (target.classList.contains("com-marking-shape")) {
+    if (target.classList.contains('com-marking-shape')) {
       columns = this.getShapeContextMenuColumns();
-    } else if (target.classList.contains("com-image-marking-container")) {
+    } else if (target.classList.contains('com-image-marking-container')) {
       columns = this.getContainerContextMenuColumns();
     }
 
     this.highlightShape(target);
 
     this.setState({
-      contextMenuColumns: columns
+      contextMenuColumns: columns,
     });
   };
 
@@ -781,9 +781,9 @@ class ImageMarking extends React.Component {
   }
 
   uniqueShapePoints(shapesData) {
-    const arr1 = shapesData.map(item => item.join(","));
+    const arr1 = shapesData.map(item => item.join(','));
     const arr2 = Array.from(new Set(arr1));
-    const result = arr2.map(item => item.split(","));
+    const result = arr2.map(item => item.split(','));
     return result;
   }
 
@@ -793,7 +793,7 @@ class ImageMarking extends React.Component {
       contextMenuColumns,
       deleteDisable,
       groupDisable,
-      isDeleteConfirmVisible
+      isDeleteConfirmVisible,
     } = this.state;
 
     return (
@@ -802,24 +802,24 @@ class ImageMarking extends React.Component {
           &emsp;
           <i
             className="iconfont-image-marking icon-duobianxing1 operation-btn"
-            onClick={() => this.onOperateBtnClick("polygon")}
+            onClick={() => this.onOperateBtnClick('polygon')}
           />
           &ensp;
           <i
             className="iconfont-image-marking icon-xianduan operation-btn"
-            onClick={() => this.onOperateBtnClick("polyline")}
+            onClick={() => this.onOperateBtnClick('polyline')}
           />
           &ensp;
           <i
             className={`iconfont-image-marking icon-xingzhuangjiehe operation-btn ${
-              groupDisable ? "disabled" : ""
+              groupDisable ? 'disabled' : ''
             }`}
-            onClick={() => this.onOperateBtnClick("group")}
+            onClick={() => this.onOperateBtnClick('group')}
           />
           &ensp;
           <i
             className={`iconfont-image-marking icon-shanchu operation-btn ${
-              deleteDisable ? "disabled" : ""
+              deleteDisable ? 'disabled' : ''
             }`}
             onClick={() => this.onDelete()}
           />

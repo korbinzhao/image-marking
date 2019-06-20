@@ -1,59 +1,59 @@
-import React, { Component } from "react";
-import ImageMarking from "../src/index";
-import { DATA1, DATA2 } from "./data";
-import { Modal } from "antd";
+import React, { Component } from 'react';
+import ImageMarking from '../src/index';
+import { DATA1, DATA2 } from './data';
+import { Modal } from 'antd';
 
 export default class Demo extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      dataSource: DATA2.shapes
+      dataSource: DATA2.shapes,
     };
   }
 
   componentDidMount() {
     setTimeout(() => {
       // 根据 shapeId 设置某个图形的属性
-      this.imageMarkingRef.setShapeAttr("[shape_id=id003]", {
-        fill: "lightblue"
+      this.imageMarkingRef.setShapeAttr('[shape_id=id003]', {
+        fill: 'lightblue',
       });
 
       // 获取当前所有选中图形
       const elementsActived = this.imageMarkingRef.getElementsActived();
-      console.log("elementsActived", elementsActived);
+      console.log('elementsActived', elementsActived);
 
       // 获取 ImageMarking 中的 snap 实例，可通过 snap 调用 Snapsvg API
       const snap = this.imageMarkingRef.snap;
-      console.log("snap", snap);
+      console.log('snap', snap);
 
       // 根据选择器获取单个图形
-      const shape = this.imageMarkingRef.select("[shape_id=id002]");
-      console.log("shape", shape);
+      const shape = this.imageMarkingRef.select('[shape_id=id002]');
+      console.log('shape', shape);
 
       // 根据选择器获取多个图形
       const shapes = this.imageMarkingRef.selectAll(
-        "[shape_id=id002],[shape_id=id001]"
+        '[shape_id=id002],[shape_id=id001]'
       );
-      console.log("shapes", shapes);
+      console.log('shapes', shapes);
 
       // 根据选择器高亮多个图形
       const shapesHighlight = this.imageMarkingRef.highlightShapesBySelector(
-        "[shape_id=id002],[shape_id=id001]"
+        '[shape_id=id002],[shape_id=id001]'
       );
-      console.log("shapesHighlight", shapesHighlight);
+      console.log('shapesHighlight', shapesHighlight);
 
       // 获取当前画布数据
       const shapesData = this.imageMarkingRef.getShapesData();
-      console.log("shapesData", shapesData);
+      console.log('shapesData', shapesData);
 
       setTimeout(() => {
         this.setState(
           {
-            dataSource: DATA1.shapes
+            dataSource: DATA1.shapes,
           },
           () => {
-            console.log("data change done");
+            console.log('data change done');
           }
         );
       }, 500);
@@ -61,57 +61,57 @@ export default class Demo extends Component {
   }
 
   onContainerClick(e) {
-    console.log("onContainerClick", e);
+    console.log('onContainerClick', e);
   }
 
   onContainerDblClick(e) {
-    console.log("onContainerDblClick", e);
+    console.log('onContainerDblClick', e);
   }
 
   onShapeClick(element) {
     // 获取图形ID shapeId
-    const shapeId = element.node.getAttribute("shape_id");
+    const shapeId = element.node.getAttribute('shape_id');
 
-    console.log("onShapeClick", shapeId, element);
+    console.log('onShapeClick', shapeId, element);
   }
 
   onShapeDblClick(element) {
     // 获取图形ID shapeId
-    const shapeId = element.node.getAttribute("shape_id");
-    console.log("onShapeDblClick", shapeId, element);
+    const shapeId = element.node.getAttribute('shape_id');
+    console.log('onShapeDblClick', shapeId, element);
   }
 
   onShapesDelete(elements) {
     const shapeIds = [];
     elements &&
       elements.forEach(element => {
-        const shapeId = element.node.getAttribute("shape_id");
+        const shapeId = element.node.getAttribute('shape_id');
         shapeIds.push(shapeId);
       });
 
-    console.log("onShapesDelete", shapeIds, elements);
+    console.log('onShapesDelete', shapeIds, elements);
   }
 
   onShiftShapeClick(elements) {
     const shapeIds = [];
     elements &&
       elements.forEach(element => {
-        const shapeId = element.node.getAttribute("shape_id");
+        const shapeId = element.node.getAttribute('shape_id');
         shapeIds.push(shapeId);
       });
-    console.log("onShiftClick", shapeIds, elements);
+    console.log('onShiftClick', shapeIds, elements);
   }
 
   onShapeMove(e) {
-    console.log("onShapeMove", e);
+    console.log('onShapeMove', e);
   }
 
   onChange(data) {
-    console.log("onChange", data);
+    console.log('onChange', data);
   }
 
   onGroup(elements) {
-    console.log("onGroup", elements);
+    console.log('onGroup', elements);
   }
 
   render() {
@@ -120,7 +120,7 @@ export default class Demo extends Component {
     const deleteConfirm = (
       <Modal
         title="自定义删除"
-        visible={true}
+        visible
         onOk={() => {
           this.imageMarkingRef.setDeleteConfirmVisible(false);
           this.imageMarkingRef.deleteShapesActived();
@@ -148,8 +148,8 @@ export default class Demo extends Component {
           }}
           dataSource={dataSource}
           readOnly={false}
-          isDeleteConfirmOpen={true}
-          // deleteConfirm={deleteConfirm}
+          isDeleteConfirmOpen
+          deleteConfirm={deleteConfirm}
           onChange={this.onChange} // 画布发生变化时的回调事件
           onContainerClick={this.onContainerClick} // 容器单击事件
           onContainerDblClick={this.onContainerDblClick} // 容器双击时间
