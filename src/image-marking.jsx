@@ -781,10 +781,19 @@ class ImageMarking extends React.Component {
     });
   }
 
-  uniqueShapePoints(shapesData) {
-    const arr1 = shapesData.map(item => item.join(','));
+  /**
+   * 对顶点数组进行去重处理
+   * @param {*} points
+   */
+  uniqueShapePoints(points) {
+    const arr1 = points.map(item => item.join(','));
     const arr2 = Array.from(new Set(arr1));
-    const result = arr2.map(item => item.split(','));
+    const result = arr2.map(item => {
+      const arr = item.split(',');
+      arr[0] *= 1;
+      arr[1] *= 1;
+      return arr;
+    });
     return result;
   }
 
