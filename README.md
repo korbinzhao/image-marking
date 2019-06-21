@@ -207,6 +207,7 @@ export const DATA1 = {
     label: 'ql_1',
     line_color: null,
     fill_color: null,
+    highlight: true,
     points: [
       [658, 280],
       [476, 273],
@@ -275,5 +276,6 @@ export const DATA2 = {
     },
   ],
 }
+
 
 ```

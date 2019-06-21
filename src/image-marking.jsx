@@ -233,13 +233,19 @@ class ImageMarking extends React.Component {
 
     let attr;
 
+    let className = 'com-marking-shape';
+
+    if(shape.highlight){
+      className = 'com-marking-shape active'
+    }
+
     switch (shape.shape_type) {
       case 'polygon': // 多边形
         attr = {
           stroke: '#1678E6',
           strokeWidth: 1,
           fill: '#044B9410',
-          class: 'com-marking-shape',
+          class: className,
           shape_id: shape.shape_id || uuid(),
         };
 
