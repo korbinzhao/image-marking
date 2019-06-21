@@ -642,13 +642,13 @@ class ImageMarking extends React.Component {
 
       this.highlightShape(element.node);
 
-      const { onShapeClick } = this.props;
-      onShapeClick(element);
-
-      if (isShiftKeyDown) {
+      if (isShiftKeyDown) { // shift 按键按下的时候只触发 onShiftShapeClick
         const { onShiftShapeClick } = this.props;
         const elements = this.getElementsActived();
         onShiftShapeClick(elements);
+      } else {
+        const { onShapeClick } = this.props;
+        onShapeClick(element);
       }
     }
   };
