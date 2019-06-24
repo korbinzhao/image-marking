@@ -64,6 +64,7 @@ class ImageMarking extends React.Component {
     this.snap = null; // Snap 实例
     this.clickTimer = null; // 点击事件 timer，用于区分单双击
     this.clickCount = 0; // 用于点击次数计数，区分单双击
+    this.drawingShape = null; // 正在绘制的图形数据
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -76,10 +77,12 @@ class ImageMarking extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     const { dataSource } = nextProps;
-    const { shapesData, drawing } = this.state;
+    const { shapesData } = this.state;
 
-    if (!drawing && JSON.stringify(dataSource) !== JSON.stringify(shapesData)) {
-      console.log("componentWillReceiveProps", nextProps.dataSource);
+    console.log("componentWillReceiveProps before", nextProps.dataSource);
+
+    if (JSON.stringify(dataSource) !== JSON.stringify(shapesData)) {
+      console.log("componentWillReceiveProps do", nextProps.dataSource);
 
       this.setState({ shapesData: dataSource }, () => {
         this.drawShapes(dataSource);
@@ -211,7 +214,7 @@ class ImageMarking extends React.Component {
     // 情况画布
     this.snap.paper.clear();
 
-    shapesData.forEach((shape, shapeIndex) => {
+    shapesData.forEach((shape) => {
       this.drawShap(shape);
     });
   }
@@ -458,6 +461,7 @@ class ImageMarking extends React.Component {
   // 结束绘制
   endDrawing = e => {
     this.clearTempDrawingLine();
+    this.drawingShape = null;
 
     this.setState(
       {
@@ -477,14 +481,12 @@ class ImageMarking extends React.Component {
     const { drawing, shapesData } = this.state;
 
     if (drawing) {
-      const length = shapesData && shapesData.length;
+      this.drawingShape.points.pop();
+      this.drawingShape.points.push([position.x, position.y]);
 
-      if (length > 0) {
-        shapesData[length - 1].points.pop();
-        shapesData[length - 1].points.push([position.x, position.y]);
+      const tempShapesData = shapesData.concat([this.drawingShape]);
 
-        this.drawShapes(shapesData);
-      }
+      this.drawShapes(tempShapesData);
     }
   };
 
@@ -494,33 +496,34 @@ class ImageMarking extends React.Component {
   clearTempDrawingLine() {
     const { shapesData } = this.state;
 
-    const length = shapesData && shapesData.length;
+    // const length = shapesData && shapesData.length;
 
-    if (length > 0) {
-      shapesData[length - 1].points.pop();
+    // if (length > 0) {
+    //   shapesData[length - 1].points.pop();
+    this.drawingShape.points.pop();
 
-      this.drawShapes(shapesData);
-    }
+    const temp = shapesData.concat([this.drawingShape]);
+
+    this.setState(
+      {
+        shapesData: temp
+      },
+      () => {
+        this.drawShapes(temp);
+      }
+    );
+
+    // }
   }
 
   // 增加顶点
   addPoint = position => {
     const { shapesData, drawing } = this.state;
-    const length = shapesData && shapesData.length;
 
-    if (drawing && length) {
-      shapesData[length - 1].points.push([position.x, position.y]);
+    if (drawing) {
+      this.drawingShape.points.push([position.x, position.y]);
 
-      console.log("addPoint", position, JSON.stringify(shapesData));
-
-      this.setState(
-        {
-          shapesData
-        },
-        () => {
-          this.drawShapes(shapesData);
-        }
-      );
+      this.drawShapes(shapesData.concat([this.drawingShape]));
     }
   };
 
@@ -569,20 +572,26 @@ class ImageMarking extends React.Component {
    * @param {string} shapeType 图形类型，polygon 或 polyline
    */
   addNewShape = shapeType => {
-    const { shapesData } = this.state;
+    // const { shapesData } = this.state;
 
-    const tempArr = JSON.parse(JSON.stringify(shapesData));
+    // const tempArr = JSON.parse(JSON.stringify(shapesData));
 
-    tempArr.push({
+    // tempArr.push({
+    //   shape_type: shapeType,
+    //   shape_id: uuid(),
+    //   points: []
+    // });
+
+    this.drawingShape = {
       shape_type: shapeType,
       shape_id: uuid(),
       points: []
-    });
+    };
 
     this.setState({
       drawing: true,
-      shapeType,
-      shapesData: tempArr
+      shapeType
+      // shapesData: tempArr
     });
   };
 
@@ -659,8 +668,6 @@ class ImageMarking extends React.Component {
     if (!drawing) {
       e.stopPropagation();
 
-      console.log("onElementClick");
-
       if (!isShiftKeyDown) {
         this.clearElementActive();
       }
@@ -686,8 +693,6 @@ class ImageMarking extends React.Component {
   onElementDblClick = e => {
     const { drawing } = this.state;
     if (!drawing) {
-      console.log("onElementDblClick");
-
       const { target } = e;
       const element = Snap(target);
 
@@ -705,8 +710,6 @@ class ImageMarking extends React.Component {
     clearTimeout(this.clickTimer);
 
     this.clickCount++; // 单击次数加1
-
-    console.log("onSvgClick", this.clickCount);
 
     const { drawing } = this.state;
 
@@ -732,8 +735,6 @@ class ImageMarking extends React.Component {
   // SVG 双击事件
   onSvgDblclick = e => {
     clearTimeout(this.clickTimer);
-
-    console.log("onSvgDblclick");
 
     const { drawing } = this.state;
 
