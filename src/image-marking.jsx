@@ -79,11 +79,7 @@ class ImageMarking extends React.Component {
     const { dataSource } = nextProps;
     const { shapesData } = this.state;
 
-    console.log("componentWillReceiveProps before", nextProps.dataSource);
-
     if (JSON.stringify(dataSource) !== JSON.stringify(shapesData)) {
-      console.log("componentWillReceiveProps do", nextProps.dataSource);
-
       this.setState({ shapesData: dataSource }, () => {
         this.drawShapes(dataSource);
         this.setOperateBtnDisableState();
@@ -214,7 +210,7 @@ class ImageMarking extends React.Component {
     // 情况画布
     this.snap.paper.clear();
 
-    shapesData.forEach((shape) => {
+    shapesData.forEach(shape => {
       this.drawShap(shape);
     });
   }
