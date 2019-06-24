@@ -454,12 +454,15 @@ class ImageMarking extends React.Component {
 
   // 结束绘制
   endDrawing = e => {
-    this.setState({
-      drawing: false
-    }, () => {
-      const { shapesData } = this.state;
-      this.onShapesDataChange(shapesData);
-    });
+    this.setState(
+      {
+        drawing: false
+      },
+      () => {
+        const { shapesData } = this.state;
+        this.onShapesDataChange(shapesData);
+      }
+    );
   };
 
   // 增加边线
@@ -684,20 +687,20 @@ class ImageMarking extends React.Component {
   onSvgClick = e => {
     // clearTimeout(this.clickTimer);
 
-    console.log('onSvgClick');
+    console.log("onSvgClick");
 
     // // 通过延迟执行单击逻辑，来解决单双击事件逻辑相互干扰问题
     // this.clickTimer = setTimeout(() => {
-      const { drawing } = this.state;
+    const { drawing } = this.state;
 
-      if (drawing) {
-        this.addEdge(e);
-      } else {
-        this.clearElementActive();
-      }
+    if (drawing) {
+      this.addEdge(e);
+    } else {
+      this.clearElementActive();
+    }
 
-      const { onContainerClick } = this.props;
-      onContainerClick(e);
+    const { onContainerClick } = this.props;
+    onContainerClick(e);
     // }, 100);
   };
 
@@ -705,7 +708,7 @@ class ImageMarking extends React.Component {
   onSvgDblclick = e => {
     // clearTimeout(this.clickTimer);
 
-    console.log('onSvgDblclick');
+    console.log("onSvgDblclick");
 
     const { drawing } = this.state;
 
