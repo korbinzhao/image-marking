@@ -592,8 +592,6 @@ class ImageMarking extends React.Component {
     let { shapesData } = this.state;
     const elements = this.snap.selectAll(".com-marking-shape.active");
 
-    console.log("deleted", elements);
-
     elements &&
       elements.forEach(ele => {
         Snap(ele).remove();
