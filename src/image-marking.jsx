@@ -51,7 +51,7 @@ class ImageMarking extends React.Component {
     super(props);
 
     this.state = {
-      shapesData: props.dataSource,
+      shapesData: props.dataSource, // 画布数据
       drawing: false, // 是否处于绘制图形状态
       draging: false, // 是否处于图形拖动状态
       isShiftKeyDown: false, // 当前 shift 键是否被按下
@@ -60,9 +60,10 @@ class ImageMarking extends React.Component {
       isDeleteConfirmVisible: false
     };
 
-    this.timer = { id: null }; // 用于节流阀函数
+    this.dragMoveTimer = { id: null }; // 用于 dragMove 事件的节流阀函数
     this.snap = null; // Snap 实例
     this.clickTimer = null; // 点击事件 timer，用于区分单双击
+    this.clickCount = 0; // 用于点击次数计数，区分单双击
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -78,8 +79,7 @@ class ImageMarking extends React.Component {
     const { shapesData, drawing } = this.state;
 
     if (!drawing && JSON.stringify(dataSource) !== JSON.stringify(shapesData)) {
-
-      console.log('componentWillReceiveProps', nextProps.dataSource);
+      console.log("componentWillReceiveProps", nextProps.dataSource);
 
       this.setState({ shapesData: dataSource }, () => {
         this.drawShapes(dataSource);
@@ -103,7 +103,7 @@ class ImageMarking extends React.Component {
 
     this.snap = Snap(selector);
 
-    this.snap.dblclick(this.onSvgDblclick);
+    // this.snap.dblclick(this.onSvgDblclick);
     this.snap.click(this.onSvgClick);
     this.snap.mousemove(this.onMousemove);
 
@@ -390,7 +390,7 @@ class ImageMarking extends React.Component {
         );
       },
       10,
-      this.timer
+      this.dragMoveTimer
     );
   };
 
@@ -457,6 +457,8 @@ class ImageMarking extends React.Component {
 
   // 结束绘制
   endDrawing = e => {
+    this.clearTempDrawingLine();
+
     this.setState(
       {
         drawing: false
@@ -468,13 +470,6 @@ class ImageMarking extends React.Component {
     );
   };
 
-  // 增加边线
-  addEdge = e => {
-    const position = getEventPosition(e);
-
-    this.addPoint(position);
-  };
-
   // 绘制连线
   drawLine = e => {
     const position = getEventPosition(e);
@@ -482,19 +477,31 @@ class ImageMarking extends React.Component {
     const { drawing, shapesData } = this.state;
 
     if (drawing) {
-      // const tempData = JSON.parse(JSON.stringify(shapesData));
-      const tempData = shapesData;
-
-      const length = tempData && tempData.length;
+      const length = shapesData && shapesData.length;
 
       if (length > 0) {
-        tempData[length - 1].points.pop();
-        tempData[length - 1].points.push([position.x, position.y]);
+        shapesData[length - 1].points.pop();
+        shapesData[length - 1].points.push([position.x, position.y]);
 
-        this.drawShapes(tempData);
+        this.drawShapes(shapesData);
       }
     }
   };
+
+  /**
+   * 清除绘制图形时产生的临时线条
+   */
+  clearTempDrawingLine() {
+    const { shapesData } = this.state;
+
+    const length = shapesData && shapesData.length;
+
+    if (length > 0) {
+      shapesData[length - 1].points.pop();
+
+      this.drawShapes(shapesData);
+    }
+  }
 
   // 增加顶点
   addPoint = position => {
@@ -503,6 +510,9 @@ class ImageMarking extends React.Component {
 
     if (drawing && length) {
       shapesData[length - 1].points.push([position.x, position.y]);
+
+      console.log("addPoint", position, JSON.stringify(shapesData));
+
       this.setState(
         {
           shapesData
@@ -694,21 +704,29 @@ class ImageMarking extends React.Component {
   onSvgClick = e => {
     clearTimeout(this.clickTimer);
 
-    console.log("onSvgClick");
+    this.clickCount++; // 单击次数加1
+
+    console.log("onSvgClick", this.clickCount);
+
+    const { drawing } = this.state;
+
+    if (drawing) {
+      const position = getEventPosition(e);
+      this.addPoint(position);
+    } else {
+      this.clearElementActive();
+    }
+
+    const { onContainerClick } = this.props;
+    onContainerClick(e);
 
     // 通过延迟执行单击逻辑，来解决单双击事件逻辑相互干扰问题
     this.clickTimer = setTimeout(() => {
-      const { drawing } = this.state;
-
-      if (drawing) {
-        this.addEdge(e);
-      } else {
-        this.clearElementActive();
+      if (this.clickCount > 1) {
+        this.onSvgDblclick(e);
       }
-
-      const { onContainerClick } = this.props;
-      onContainerClick(e);
-    }, 100);
+      this.clickCount = 0;
+    }, 200);
   };
 
   // SVG 双击事件
@@ -806,7 +824,7 @@ class ImageMarking extends React.Component {
       return true;
     });
 
-    return JSON.parse(JSON.stringify(result))
+    return JSON.parse(JSON.stringify(result));
   }
 
   /**
