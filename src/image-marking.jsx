@@ -78,6 +78,9 @@ class ImageMarking extends React.Component {
     const { shapesData, drawing } = this.state;
 
     if (!drawing && JSON.stringify(dataSource) !== JSON.stringify(shapesData)) {
+
+      console.log('componentWillReceiveProps', nextProps.dataSource);
+
       this.setState({ shapesData: dataSource }, () => {
         this.drawShapes(dataSource);
         this.setOperateBtnDisableState();
@@ -100,8 +103,8 @@ class ImageMarking extends React.Component {
 
     this.snap = Snap(selector);
 
-    this.snap.click(this.onSvgClick);
     this.snap.dblclick(this.onSvgDblclick);
+    this.snap.click(this.onSvgClick);
     this.snap.mousemove(this.onMousemove);
 
     const { shapesData } = this.state;
@@ -589,6 +592,8 @@ class ImageMarking extends React.Component {
     let { shapesData } = this.state;
     const elements = this.snap.selectAll(".com-marking-shape.active");
 
+    console.log("deleted", elements);
+
     elements &&
       elements.forEach(ele => {
         Snap(ele).remove();
@@ -646,6 +651,8 @@ class ImageMarking extends React.Component {
     if (!drawing) {
       e.stopPropagation();
 
+      console.log("onElementClick");
+
       if (!isShiftKeyDown) {
         this.clearElementActive();
       }
@@ -671,6 +678,8 @@ class ImageMarking extends React.Component {
   onElementDblClick = e => {
     const { drawing } = this.state;
     if (!drawing) {
+      console.log("onElementDblClick");
+
       const { target } = e;
       const element = Snap(target);
 
@@ -685,28 +694,28 @@ class ImageMarking extends React.Component {
 
   // SVG 点击事件
   onSvgClick = e => {
-    // clearTimeout(this.clickTimer);
+    clearTimeout(this.clickTimer);
 
     console.log("onSvgClick");
 
-    // // 通过延迟执行单击逻辑，来解决单双击事件逻辑相互干扰问题
-    // this.clickTimer = setTimeout(() => {
-    const { drawing } = this.state;
+    // 通过延迟执行单击逻辑，来解决单双击事件逻辑相互干扰问题
+    this.clickTimer = setTimeout(() => {
+      const { drawing } = this.state;
 
-    if (drawing) {
-      this.addEdge(e);
-    } else {
-      this.clearElementActive();
-    }
+      if (drawing) {
+        this.addEdge(e);
+      } else {
+        this.clearElementActive();
+      }
 
-    const { onContainerClick } = this.props;
-    onContainerClick(e);
-    // }, 100);
+      const { onContainerClick } = this.props;
+      onContainerClick(e);
+    }, 100);
   };
 
   // SVG 双击事件
   onSvgDblclick = e => {
-    // clearTimeout(this.clickTimer);
+    clearTimeout(this.clickTimer);
 
     console.log("onSvgDblclick");
 
@@ -789,7 +798,7 @@ class ImageMarking extends React.Component {
 
   // 过滤掉顶点数小于2个的图形
   handleShapesData(shapesData) {
-    return shapesData.filter(item => {
+    const result = shapesData.filter(item => {
       const points = this.uniqueShapePoints(item.points);
       item.points = points;
       if (points.length === 1) {
@@ -798,6 +807,8 @@ class ImageMarking extends React.Component {
       }
       return true;
     });
+
+    return JSON.parse(JSON.stringify(result))
   }
 
   /**
