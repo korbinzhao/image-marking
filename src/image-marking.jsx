@@ -456,10 +456,10 @@ class ImageMarking extends React.Component {
   endDrawing = e => {
     this.setState({
       drawing: false
+    }, () => {
+      const { shapesData } = this.state;
+      this.onShapesDataChange(shapesData);
     });
-
-    const { shapesData } = this.state;
-    this.onShapesDataChange(shapesData);
   };
 
   // 增加边线
@@ -682,10 +682,12 @@ class ImageMarking extends React.Component {
 
   // SVG 点击事件
   onSvgClick = e => {
-    clearTimeout(this.clickTimer);
+    // clearTimeout(this.clickTimer);
 
-    // 通过延迟执行单击逻辑，来解决单双击事件逻辑相互干扰问题
-    this.clickTimer = setTimeout(() => {
+    console.log('onSvgClick');
+
+    // // 通过延迟执行单击逻辑，来解决单双击事件逻辑相互干扰问题
+    // this.clickTimer = setTimeout(() => {
       const { drawing } = this.state;
 
       if (drawing) {
@@ -696,12 +698,14 @@ class ImageMarking extends React.Component {
 
       const { onContainerClick } = this.props;
       onContainerClick(e);
-    }, 100);
+    // }, 100);
   };
 
   // SVG 双击事件
   onSvgDblclick = e => {
-    clearTimeout(this.clickTimer);
+    // clearTimeout(this.clickTimer);
+
+    console.log('onSvgDblclick');
 
     const { drawing } = this.state;
 
