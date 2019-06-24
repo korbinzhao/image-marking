@@ -262,7 +262,7 @@ class ImageMarking extends React.Component {
           strokeWidth: 1,
           fill: "#044B9410",
           fillOpacity: 0,
-          class: "com-marking-shape",
+          class: className,
           shape_id: shape.shape_id || uuid()
         };
 
